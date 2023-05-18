@@ -25,22 +25,7 @@ public class HexMetrics : MonoBehaviour
 
     public const float xRadius = 2f, zRadius = 1.725f;
 
-    public const float elevationStep = 1f;
+    public const float elevationStep = 0.5f;
 
-    public enum HexType
-    {
-        Grass,
-        Rock,
-        Sand,
-        Water,
-    };
-
-    public List<GameObject> TerrainTypesPrefabs;
-
-    public static GameObject GetTerrainPrefab(HexType type)
-    {
-        if ((int)type >= Instance.TerrainTypesPrefabs.Count)
-            return null;
-        return Instance.TerrainTypesPrefabs[(int)type];
-    }
+    public HexTerrains hexTerrains;
 }

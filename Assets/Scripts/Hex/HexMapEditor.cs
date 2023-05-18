@@ -12,32 +12,65 @@ public class HexMapEditor : MonoBehaviour
     int activeElevation;
     int brushSize;
     bool applyElevation = false;
-    HexMetrics.HexType activeTerrainType;
+    HexTerrains.HexType activeTerrainType;
+    enum OptionalToggle
+    {
+        Ignore, Yes, No
+    }
+
+    OptionalToggle roadMode;
+    bool isDrag;
+    HexDirection dragDirection;
+    HexCell previousCell;
+
+    void Awake()
+    {
+
+    }
 
     void Update()
     {
-        if (Input.GetMouseButton(0))
-        {
+        if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
             HandleInput();
-        }
+        else
+            previousCell = null;
     }
 
     void HandleInput()
     {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        bool isOverUI = EventSystem.current.IsPointerOverGameObject();
-        if (Physics.Raycast(inputRay, out hit) && !isOverUI)
+        if (Physics.Raycast(inputRay, out hit))
         {
-            EditCells(hexGrid.GetCell(hit.point));
-            // Debug.Log(HexCoordinates.FromPosition(hit.point));
-            // hexGrid.ChangeTile(hit.collider.gameObject.GetComponent<HexCell>(), activeTilePrefab);
-            // hexGrid. ChangeTile(HexCoordinates.FromPosition(hit.point), activeTilePrefab);
+            HexCell currentCell = hexGrid.GetCell(hit.point);
+            if (previousCell && previousCell != currentCell)
+                ValidateDrag(currentCell);
+            else
+                isDrag = false;
+            EditCells(currentCell);
+            previousCell = currentCell;
         }
+        else
+            previousCell = null;
     }
 
+    void ValidateDrag(HexCell currentCell)
+    {
+        for (dragDirection = HexDirection.NE; dragDirection <= HexDirection.NW; dragDirection++)
+        {
+            if (previousCell.GetNeighbor(dragDirection) == currentCell)
+            {
+                isDrag = true;
+                return;
+            }
+        }
+        isDrag = false;
+    }
     void EditCells(HexCell center)
     {
+        if (center == null)
+            return;
+
         int centerX = center.coordinates.X;
         int centerZ = center.coordinates.Z;
 
@@ -63,18 +96,24 @@ public class HexMapEditor : MonoBehaviour
             return;
 
         if (activeTerrainType >= 0)
-        {
             cell.TerrainType = activeTerrainType;
-        }
         if (applyElevation)
-        {
             cell.Elevation = activeElevation;
+        if (roadMode == OptionalToggle.No)
+            cell.RemoveRoads();
+        if (isDrag)
+        {
+            HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
+            if (otherCell)
+                if (roadMode == OptionalToggle.Yes)
+                    otherCell.AddRoad(dragDirection);
+
         }
     }
 
     public void SetTerrainTypeIndex(int index)
     {
-        activeTerrainType = (HexMetrics.HexType)index;
+        activeTerrainType = (HexTerrains.HexType)index;
     }
 
     public void SetBrushSize(float size)
@@ -89,6 +128,10 @@ public class HexMapEditor : MonoBehaviour
     public void SetApplyElevation(bool toggle)
     {
         applyElevation = toggle;
+    }
+    public void SetRoadMode(int mode)
+    {
+        roadMode = (OptionalToggle)mode;
     }
 
     public void ShowUI(bool visible)
