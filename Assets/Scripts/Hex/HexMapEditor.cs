@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.EventSystems;
 using UnityEngine;
 using TMPro;
 using System.IO;
@@ -25,7 +26,8 @@ public class HexMapEditor : MonoBehaviour
     {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit))
+        bool isOverUI = EventSystem.current.IsPointerOverGameObject();
+        if (Physics.Raycast(inputRay, out hit) && !isOverUI)
         {
             EditCells(hexGrid.GetCell(hit.point));
             // Debug.Log(HexCoordinates.FromPosition(hit.point));
@@ -94,34 +96,6 @@ public class HexMapEditor : MonoBehaviour
         foreach (HexCell cell in hexGrid.cells)
         {
             cell.GetComponentInChildren<TextMeshProUGUI>(true)?.gameObject.SetActive(visible);
-        }
-    }
-
-    public void Save()
-    {
-        Debug.Log(Application.persistentDataPath);
-        string path = Path.Combine(Application.persistentDataPath, "test.map");
-        using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
-        {
-            writer.Write(0);
-            hexGrid.Save(writer);
-        }
-    }
-
-    public void Load()
-    {
-        string path = Path.Combine(Application.persistentDataPath, "test.map");
-        using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
-        {
-            int header = reader.ReadInt32();
-            if (header == 0)
-            {
-                hexGrid.Load(reader);
-            }
-            else
-            {
-                Debug.LogWarning("Unknown map format " + header);
-            }
         }
     }
 }

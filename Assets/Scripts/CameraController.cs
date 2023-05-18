@@ -4,6 +4,28 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    public static CameraController Instance { get; private set; }
+
+    private void Awake()
+    {
+        // If there is an instance, and it's not me, delete myself.
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+    public static bool Locked
+    {
+        set
+        {
+            Instance.enabled = !value;
+        }
+    }
     public float speed = 10f;
     public int cameraDragSpeed = 100;
 

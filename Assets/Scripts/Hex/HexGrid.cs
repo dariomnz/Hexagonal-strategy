@@ -39,12 +39,29 @@ public class HexGrid : MonoBehaviour
 
     public void CreateMap()
     {
+        CreateMap(chunkCountX, chunkCountZ);
+    }
+
+    public void CreateMap(int chunksX, int chunksZ)
+    {
+        if (chunksX <= 0 || chunksZ <= 0)
+        {
+            Debug.LogError("Unsupported map size.");
+            return;
+        }
+
+        chunkCountX = chunksX;
+        chunkCountZ = chunksZ;
+
         foreach (Transform child in transform)
         {
             DestroyImmediate(child.gameObject);
         }
         map = new GameObject("Map");
         map.transform.parent = transform;
+
+        chunks = null;
+        cells = null;
 
         CreateChunks();
         CreateCells();
@@ -176,6 +193,8 @@ public class HexGrid : MonoBehaviour
 
     public void Save(BinaryWriter writer)
     {
+        writer.Write(chunkCountX);
+        writer.Write(chunkCountZ);
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Save(writer);
@@ -184,6 +203,7 @@ public class HexGrid : MonoBehaviour
 
     public void Load(BinaryReader reader)
     {
+        CreateMap(reader.ReadInt32(), reader.ReadInt32());
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Load(reader);
