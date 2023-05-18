@@ -7,6 +7,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -133454396152487064, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}
+      propertyPath: type
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2076112903284513013, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -61,7 +65,7 @@ PrefabInstance:
       objectReference: {fileID: -8492746844025314016, guid: e368091820bfbce499f2dba191351e8b, type: 3}
     - target: {fileID: 5065811764449158012, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}
       propertyPath: m_Name
-      value: Grass
+      value: Sand
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}

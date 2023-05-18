@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.IO;
 
 
 public class HexGrid : MonoBehaviour
 {
-
+    [Min(1)]
     public int chunkCountX = 4, chunkCountZ = 3;
 
     private int cellCountX { get { return chunkCountX * HexMetrics.chunkSizeX; } }
     private int cellCountZ { get { return chunkCountZ * HexMetrics.chunkSizeZ; } }
-    [Min(5)]
-    public int gridSize = 5;
 
     public HexCell cellPrefab;
     public HexGridChunk chunkPrefab;
 
     [NonSerialized] public GameObject map;
     [NonSerialized] public HexCell[] cells;
+
     HexGridChunk[] chunks;
 
     void Start()
@@ -159,18 +159,6 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-    public void ChangeTile(HexCell cell, GameObject newTile)
-    {
-        if (cell == null)
-            return;
-        cell.ChangeTile(newTile);
-    }
-
-    // public void ChangeTile(HexCoordinates coordinates, GameObject newTile)
-    // {
-    //     GetCell(coordinates).ChangeTile(newTile);
-    // }
-
     public HexCell GetCell(Vector3 worldPosition)
     {
         HexCoordinates coordinates = HexCoordinates.FromPosition(worldPosition);
@@ -184,5 +172,21 @@ public class HexGrid : MonoBehaviour
             return cells[index];
         else
             return null;
+    }
+
+    public void Save(BinaryWriter writer)
+    {
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Save(writer);
+        }
+    }
+
+    public void Load(BinaryReader reader)
+    {
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Load(reader);
+        }
     }
 }

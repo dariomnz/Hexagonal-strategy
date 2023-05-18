@@ -2,9 +2,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class HexCell : MonoBehaviour
 {
+    HexMetrics.HexType terrainType;
+    public HexMetrics.HexType TerrainType
+    {
+        get { return terrainType; }
+        set
+        {
+            if (terrainType != value)
+            {
+                terrainType = value;
+                ChangeTerrainType(terrainType);
+            }
+        }
+    }
+    int elevation;
     public int Elevation
     {
         get { return elevation; }
@@ -16,10 +31,10 @@ public class HexCell : MonoBehaviour
             transform.localPosition = position;
         }
     }
-    int elevation;
     public HexCoordinates coordinates;
     public HexCell[] neighbors;
     MeshCollider meshCollider;
+    [NonSerialized]
     public HexGridChunk chunk;
 
     void Awake()
@@ -29,10 +44,15 @@ public class HexCell : MonoBehaviour
         meshCollider.sharedMesh = GetComponentInChildren<MeshFilter>().sharedMesh;
     }
 
-    public void ChangeTile(GameObject newTile)
+    void ChangeTerrainType(HexMetrics.HexType newType)
+    {
+        ChangeMesh(HexMetrics.GetTerrainPrefab(newType));
+    }
+
+    void ChangeMesh(GameObject newTilePrefab)
     {
         Destroy(GetComponentInChildren<MeshFilter>().gameObject);
-        var tile = Instantiate(newTile, transform.position, transform.rotation);
+        var tile = Instantiate(newTilePrefab, transform.position, transform.rotation);
         tile.GetComponentInChildren<MeshFilter>().transform.parent = gameObject.transform;
         Destroy(tile);
         // Debug.Log("ChangeTile at " + coordinates.ToString());
@@ -47,6 +67,18 @@ public class HexCell : MonoBehaviour
     {
         neighbors[(int)direction] = cell;
         cell.neighbors[(int)direction.Opposite()] = this;
+    }
+
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write((int)terrainType);
+        writer.Write(elevation);
+    }
+
+    public void Load(BinaryReader reader)
+    {
+        TerrainType = (HexMetrics.HexType)reader.ReadInt32();
+        Elevation = reader.ReadInt32();
     }
 
 }
