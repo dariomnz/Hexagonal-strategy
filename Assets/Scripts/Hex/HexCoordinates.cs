@@ -47,6 +47,13 @@ public struct HexCoordinates
         return new HexCoordinates(iX, iY);
     }
 
+    public int DistanceTo(HexCoordinates other)
+    {
+        return ((x < other.x ? other.x - x : x - other.x) +
+            (Y < other.Y ? other.Y - Y : Y - other.Y) +
+            (z < other.z ? other.z - z : z - other.z)) / 2;
+    }
+
     public override string ToString()
     {
         return "(" +

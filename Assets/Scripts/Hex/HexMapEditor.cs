@@ -24,6 +24,7 @@ public class HexMapEditor : MonoBehaviour
     bool isDrag;
     HexDirection dragDirection;
     HexCell previousCell;
+    bool editMode;
 
     void Update()
     {
@@ -44,7 +45,11 @@ public class HexMapEditor : MonoBehaviour
                 ValidateDrag(currentCell);
             else
                 isDrag = false;
-            EditCells(currentCell);
+            if (editMode)
+                EditCells(currentCell);
+            else
+                hexGrid.FindDistancesTo(currentCell);
+
             previousCell = currentCell;
         }
         else
@@ -153,5 +158,10 @@ public class HexMapEditor : MonoBehaviour
     public void ShowUI(bool visible)
     {
         hexGrid.ShowUI(visible);
+    }
+
+    public void SetEditMode(bool toggle)
+    {
+        editMode = toggle;
     }
 }

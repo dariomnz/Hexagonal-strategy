@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
-
+using System.Collections;
 
 public class HexGrid : MonoBehaviour
 {
@@ -178,17 +178,7 @@ public class HexGrid : MonoBehaviour
                 new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
 
             cell.uiRect = label.rectTransform;
-
-            if (label != null)
-            {
-                label.text = cell.coordinates.ToString();
-                int neighborscount = 0;
-                foreach (var item in cell.neighbors)
-                    if (item != null)
-                        neighborscount++;
-
-                label.text += "\nNeigh: " + neighborscount.ToString();
-            }
+            cell.UpdateLabel();
         }
     }
 
@@ -217,6 +207,52 @@ public class HexGrid : MonoBehaviour
         return cells[cellIndex];
     }
 
+    public void FindDistancesTo(HexCell cell)
+    {
+        StopAllCoroutines();
+        StartCoroutine(Search(cell));
+    }
+
+    IEnumerator Search(HexCell cell)
+    {
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Distance = int.MaxValue;
+        }
+
+        WaitForSeconds delay = new WaitForSeconds(1 / 60f);
+        List<HexCell> frontier = new List<HexCell>();
+        cell.Distance = 0;
+        frontier.Add(cell);
+        while (frontier.Count > 0)
+        {
+            yield return delay;
+            HexCell current = frontier[0];
+            frontier.RemoveAt(0);
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                HexCell neighbor = current.GetNeighbor(d);
+                if (neighbor == null)
+                    continue;
+                if (neighbor.TerrainType == HexTerrains.HexType.Water)
+                    continue;
+                int distance = current.Distance;
+                if (current.HasRoadThroughEdge(d))
+                    distance += 1;
+                else
+                    distance += 10;
+                if (neighbor.Distance == int.MaxValue)
+                {
+                    neighbor.Distance = distance;
+                    frontier.Add(neighbor);
+                }
+                else if (distance < neighbor.Distance)
+                    neighbor.Distance = distance;
+                frontier.Sort((x, y) => x.Distance.CompareTo(y.Distance));
+            }
+        }
+    }
+
     public void ShowUI(bool visible)
     {
         for (int i = 0; i < chunks.Length; i++)
@@ -237,6 +273,7 @@ public class HexGrid : MonoBehaviour
 
     public void Load(BinaryReader reader)
     {
+        StopAllCoroutines();
         CreateMap(reader.ReadInt32(), reader.ReadInt32());
         for (int i = 0; i < cells.Length; i++)
         {

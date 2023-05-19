@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using TMPro;
 
 public class HexCell : MonoBehaviour
 {
@@ -38,6 +39,17 @@ public class HexCell : MonoBehaviour
             Vector3 uiPosition = uiRect.localPosition;
             uiPosition.z = elevation * -HexMetrics.elevationStep - 1.01f;
             uiRect.localPosition = uiPosition;
+        }
+    }
+
+    int distance;
+    public int Distance
+    {
+        get { return distance; }
+        set
+        {
+            distance = value;
+            UpdateLabel();
         }
     }
     public HexCoordinates coordinates;
@@ -124,6 +136,19 @@ public class HexCell : MonoBehaviour
         neighbors[index].roads[(int)((HexDirection)index).Opposite()] = state;
         Refresh();
         neighbors[index].Refresh();
+    }
+
+    public void UpdateLabel()
+    {
+        TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
+        label.text = coordinates.ToString();
+        int neighborscount = 0;
+        foreach (var item in neighbors)
+            if (item != null)
+                neighborscount++;
+
+        label.text += "\nNeigh: " + neighborscount.ToString();
+        label.text += "\nDist: " + (distance == int.MaxValue ? "" : distance.ToString());
     }
 
     public void Save(BinaryWriter writer)
