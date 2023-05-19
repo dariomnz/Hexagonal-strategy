@@ -34,6 +34,10 @@ public class HexCell : MonoBehaviour
             for (int i = 0; i < roads.Length; i++)
                 if (roads[i] && GetElevationDifference((HexDirection)i) > 1)
                     SetRoad(i, false);
+
+            Vector3 uiPosition = uiRect.localPosition;
+            uiPosition.z = elevation * -HexMetrics.elevationStep - 1.01f;
+            uiRect.localPosition = uiPosition;
         }
     }
     public HexCoordinates coordinates;
@@ -45,6 +49,8 @@ public class HexCell : MonoBehaviour
     MeshFilter meshFilter;
     [NonSerialized]
     public HexGridChunk chunk;
+    [NonSerialized]
+    public RectTransform uiRect;
 
     public void Refresh() => enabled = true;
 

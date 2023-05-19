@@ -14,5 +14,9 @@ public class GeneratePlanetEditor : Editor
         {
             myScript.CreateMap();
         }
+        if (GUILayout.Button("Delete Map"))
+        {
+            myScript.DeleteMap();
+        }
     }
 }

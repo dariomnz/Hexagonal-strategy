@@ -16,6 +16,8 @@ public class HexGrid : MonoBehaviour
     // private int cellCountZ { get { return chunkCountZ * HexMetrics.chunkSizeZ; } }
 
     public HexCell cellPrefab;
+    public TextMeshProUGUI cellLabelPrefab;
+
     public HexGridChunk chunkPrefab;
 
     [NonSerialized] public GameObject map;
@@ -43,6 +45,18 @@ public class HexGrid : MonoBehaviour
         CreateMap(cellCountX, cellCountZ);
     }
 
+    public void DeleteMap()
+    {
+        foreach (Transform child in transform)
+            DestroyImmediate(child.gameObject);
+
+        map = new GameObject("Map");
+        map.transform.parent = transform;
+
+        chunks = null;
+        cells = null;
+    }
+
     public void CreateMap(int _cellCountX, int _cellCountZ)
     {
         if (_cellCountX < HexMetrics.chunkSizeX || _cellCountZ < HexMetrics.chunkSizeZ)
@@ -56,16 +70,7 @@ public class HexGrid : MonoBehaviour
         chunkCountX = cellCountX / HexMetrics.chunkSizeX;
         chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
 
-
-        foreach (Transform child in transform)
-        {
-            DestroyImmediate(child.gameObject);
-        }
-        map = new GameObject("Map");
-        map.transform.parent = transform;
-
-        chunks = null;
-        cells = null;
+        DeleteMap();
 
         CreateChunks();
         CreateCells();
@@ -166,7 +171,14 @@ public class HexGrid : MonoBehaviour
 
         foreach (var cell in cells)
         {
-            var label = cell.GetComponentInChildren<TextMeshProUGUI>();
+
+            TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab);
+            label.rectTransform.SetParent(cell.chunk.gridCanvas.transform, false);
+            label.rectTransform.anchoredPosition =
+                new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
+
+            cell.uiRect = label.rectTransform;
+
             if (label != null)
             {
                 label.text = cell.coordinates.ToString();
@@ -175,7 +187,7 @@ public class HexGrid : MonoBehaviour
                     if (item != null)
                         neighborscount++;
 
-                label.text += "\nNeighbors:\n" + neighborscount.ToString();
+                label.text += "\nNeigh: " + neighborscount.ToString();
             }
         }
     }
@@ -203,6 +215,14 @@ public class HexGrid : MonoBehaviour
     public HexCell GetCell(int cellIndex)
     {
         return cells[cellIndex];
+    }
+
+    public void ShowUI(bool visible)
+    {
+        for (int i = 0; i < chunks.Length; i++)
+        {
+            chunks[i].ShowUI(visible);
+        }
     }
 
     public void Save(BinaryWriter writer)

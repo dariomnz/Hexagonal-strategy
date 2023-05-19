@@ -152,9 +152,6 @@ public class HexMapEditor : MonoBehaviour
 
     public void ShowUI(bool visible)
     {
-        foreach (HexCell cell in hexGrid.cells)
-        {
-            cell.GetComponentInChildren<TextMeshProUGUI>(true)?.gameObject.SetActive(visible);
-        }
+        hexGrid.ShowUI(visible);
     }
 }
