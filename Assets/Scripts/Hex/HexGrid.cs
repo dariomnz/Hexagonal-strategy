@@ -25,6 +25,8 @@ public class HexGrid : MonoBehaviour
 
     HexGridChunk[] chunks;
 
+    HexCellPriorityQueue searchFrontier;
+
     void Start()
     {
         CreateMap();
@@ -66,6 +68,8 @@ public class HexGrid : MonoBehaviour
         }
         cellCountX = _cellCountX;
         cellCountZ = _cellCountZ;
+        HexMetrics.cellSizeX = cellCountX;
+        HexMetrics.cellSizeZ = cellCountZ;
 
         chunkCountX = cellCountX / HexMetrics.chunkSizeX;
         chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
@@ -207,28 +211,54 @@ public class HexGrid : MonoBehaviour
         return cells[cellIndex];
     }
 
-    public void FindDistancesTo(HexCell cell)
+    public void FindPath(HexCell fromCell, HexCell toCell)
     {
-        StopAllCoroutines();
-        StartCoroutine(Search(cell));
+        // StopAllCoroutines();
+        // StartCoroutine(Search(fromCell, toCell));
+
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        Search(fromCell, toCell);
+        sw.Stop();
+        Debug.Log(sw.ElapsedMilliseconds);
     }
 
-    IEnumerator Search(HexCell cell)
+    void Search(HexCell fromCell, HexCell toCell)
+    // IEnumerator Search(HexCell fromCell, HexCell toCell)
     {
+        if (searchFrontier == null)
+            searchFrontier = new HexCellPriorityQueue();
+        else
+            searchFrontier.Clear();
+
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Distance = int.MaxValue;
+            cells[i].SearchHeuristic = 0;
+            cells[i].DisableHighlight();
         }
 
+        fromCell.EnableHighlight(Color.blue);
+        toCell.EnableHighlight(Color.red);
+
         WaitForSeconds delay = new WaitForSeconds(1 / 60f);
-        List<HexCell> frontier = new List<HexCell>();
-        cell.Distance = 0;
-        frontier.Add(cell);
-        while (frontier.Count > 0)
+        fromCell.Distance = 0;
+        searchFrontier.Enqueue(fromCell);
+        while (searchFrontier.Count > 0)
         {
-            yield return delay;
-            HexCell current = frontier[0];
-            frontier.RemoveAt(0);
+            // yield return delay;
+            HexCell current = searchFrontier.Dequeue();
+            if (current == toCell)
+            {
+                current = current.PathFrom;
+                while (current != fromCell)
+                {
+                    current.EnableHighlight(Color.white);
+                    current = current.PathFrom;
+                }
+                break;
+            }
+
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
                 HexCell neighbor = current.GetNeighbor(d);
@@ -241,14 +271,25 @@ public class HexGrid : MonoBehaviour
                     distance += 1;
                 else
                     distance += 10;
+                int elevationDiff = Mathf.Abs(neighbor.Elevation - current.Elevation);
+                if (elevationDiff > 1)
+                    continue;
+                if (elevationDiff == 1)
+                    distance += 5;
                 if (neighbor.Distance == int.MaxValue)
                 {
                     neighbor.Distance = distance;
-                    frontier.Add(neighbor);
+                    neighbor.PathFrom = current;
+                    neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
+                    searchFrontier.Enqueue(neighbor);
                 }
                 else if (distance < neighbor.Distance)
+                {
+                    int oldPriority = neighbor.SearchPriority;
                     neighbor.Distance = distance;
-                frontier.Sort((x, y) => x.Distance.CompareTo(y.Distance));
+                    neighbor.PathFrom = current;
+                    searchFrontier.Change(neighbor, oldPriority);
+                }
             }
         }
     }

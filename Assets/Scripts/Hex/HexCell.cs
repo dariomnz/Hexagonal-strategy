@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 using TMPro;
 
@@ -42,13 +43,24 @@ public class HexCell : MonoBehaviour
         }
     }
 
-    int distance;
+    int distance = int.MaxValue;
     public int Distance
     {
         get { return distance; }
         set
         {
             distance = value;
+            UpdateLabel();
+        }
+    }
+
+    int searchHeuristic = 0;
+    public int SearchHeuristic
+    {
+        get { return searchHeuristic; }
+        set
+        {
+            searchHeuristic = value;
             UpdateLabel();
         }
     }
@@ -63,6 +75,8 @@ public class HexCell : MonoBehaviour
     public HexGridChunk chunk;
     [NonSerialized]
     public RectTransform uiRect;
+    public HexCell PathFrom { get; set; }
+    public HexCell NextWithSamePriority { get; set; }
 
     public void Refresh() => enabled = true;
 
@@ -141,14 +155,34 @@ public class HexCell : MonoBehaviour
     public void UpdateLabel()
     {
         TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
-        label.text = coordinates.ToString();
-        int neighborscount = 0;
-        foreach (var item in neighbors)
-            if (item != null)
-                neighborscount++;
 
-        label.text += "\nNeigh: " + neighborscount.ToString();
-        label.text += "\nDist: " + (distance == int.MaxValue ? "" : distance.ToString());
+        // label.text = coordinates.ToString();
+        // int neighborscount = 0;
+        // foreach (var item in neighbors)
+        //     if (item != null)
+        //         neighborscount++;
+
+        // label.text += "\nNeigh: " + neighborscount.ToString();
+        // label.text += "\nDist: " + (distance == int.MaxValue ? "" : distance.ToString());
+
+
+        label.text = distance == int.MaxValue ? "" : distance.ToString();
+        label.text += "\n" + (SearchHeuristic == 0 ? "" : SearchHeuristic.ToString());
+    }
+
+    public int SearchPriority { get { return distance + SearchHeuristic; } }
+
+    public void DisableHighlight()
+    {
+        Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+        highlight.enabled = false;
+    }
+
+    public void EnableHighlight(Color color)
+    {
+        Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+        highlight.color = color;
+        highlight.enabled = true;
     }
 
     public void Save(BinaryWriter writer)

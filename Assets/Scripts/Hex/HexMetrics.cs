@@ -22,6 +22,7 @@ public class HexMetrics : MonoBehaviour
 
     // multiplo de 6
     public const int chunkSizeX = 6, chunkSizeZ = 6;
+    public static int cellSizeX = 0, cellSizeZ = 0;
 
     public const float xRadius = 2f, zRadius = 1.725f;
 

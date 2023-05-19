@@ -23,7 +23,7 @@ public class HexMapEditor : MonoBehaviour
     OptionalToggle roadMode;
     bool isDrag;
     HexDirection dragDirection;
-    HexCell previousCell;
+    HexCell previousCell, searchFromCell, searchToCell;
     bool editMode;
 
     void Update()
@@ -47,8 +47,26 @@ public class HexMapEditor : MonoBehaviour
                 isDrag = false;
             if (editMode)
                 EditCells(currentCell);
-            else
-                hexGrid.FindDistancesTo(currentCell);
+            else if (Input.GetKey(KeyCode.LeftShift) && searchToCell != currentCell)
+            {
+                if (searchFromCell != currentCell)
+                {
+                    if (searchFromCell)
+                        searchFromCell.DisableHighlight();
+                    searchFromCell = currentCell;
+                    searchFromCell.EnableHighlight(Color.blue);
+                    if (searchToCell)
+                        hexGrid.FindPath(searchFromCell, searchToCell);
+                }
+            }
+            else if (searchFromCell && searchFromCell != currentCell)
+            {
+                if (searchToCell != currentCell)
+                {
+                    searchToCell = currentCell;
+                    hexGrid.FindPath(searchFromCell, searchToCell);
+                }
+            }
 
             previousCell = currentCell;
         }

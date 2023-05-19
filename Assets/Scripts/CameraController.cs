@@ -26,6 +26,7 @@ public class CameraController : MonoBehaviour
             Instance.enabled = !value;
         }
     }
+    float originSpeed;
     public float speed = 10f;
     public int cameraDragSpeed = 100;
 
@@ -33,11 +34,14 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        originSpeed = speed;
         angle = transform.eulerAngles;
     }
 
     void Update()
     {
+        speed = Input.GetButton("Shift") ? originSpeed * 5 : originSpeed;
+
         if (Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized != Vector3.zero)
             transform.position += Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized * Input.GetAxis("Vertical") * speed * Time.deltaTime;
         else

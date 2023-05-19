@@ -49,9 +49,80 @@ public struct HexCoordinates
 
     public int DistanceTo(HexCoordinates other)
     {
-        return ((x < other.x ? other.x - x : x - other.x) +
-            (Y < other.Y ? other.Y - Y : Y - other.Y) +
-            (z < other.z ? other.z - z : z - other.z)) / 2;
+        int xyz = (x < other.x ? other.x - x : x - other.x) +
+                  (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                  (z < other.z ? other.z - z : z - other.z);
+
+        other.x += HexMetrics.cellSizeX;
+        // other.z += HexMetrics.cellSizeZ;
+
+        int xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                         (z < other.z ? other.z - z : z - other.z);
+        if (xyzWrapped < xyz)
+        {
+            xyz = xyzWrapped;
+        }
+        else
+        {
+            other.x -= 2 * HexMetrics.cellSizeX;
+            // other.z -= 2 * HexMetrics.cellSizeZ;
+            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                         (z < other.z ? other.z - z : z - other.z);
+            if (xyzWrapped < xyz)
+            {
+                xyz = xyzWrapped;
+            }
+        }
+
+        // other.x += HexMetrics.cellSizeX;
+        other.z += HexMetrics.cellSizeZ;
+
+        xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                     (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                     (z < other.z ? other.z - z : z - other.z);
+        if (xyzWrapped < xyz)
+        {
+            xyz = xyzWrapped;
+        }
+        else
+        {
+            // other.x -= 2 * HexMetrics.cellSizeX;
+            other.z -= 2 * HexMetrics.cellSizeZ;
+            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                         (z < other.z ? other.z - z : z - other.z);
+            if (xyzWrapped < xyz)
+            {
+                xyz = xyzWrapped;
+            }
+        }
+
+        other.x += HexMetrics.cellSizeX;
+        other.z += HexMetrics.cellSizeZ;
+
+        xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                     (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                     (z < other.z ? other.z - z : z - other.z);
+        if (xyzWrapped < xyz)
+        {
+            xyz = xyzWrapped;
+        }
+        else
+        {
+            other.x -= 2 * HexMetrics.cellSizeX;
+            other.z -= 2 * HexMetrics.cellSizeZ;
+            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
+                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
+                         (z < other.z ? other.z - z : z - other.z);
+            if (xyzWrapped < xyz)
+            {
+                xyz = xyzWrapped;
+            }
+        }
+
+        return xyz / 2;
     }
 
     public override string ToString()
