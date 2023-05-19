@@ -1,9 +1,11 @@
 using UnityEngine;
+using System;
 
 public class NewMapMenu : MonoBehaviour
 {
-
+    bool generateMaps = true;
     public HexGrid hexGrid;
+    public HexMapGenerator mapGenerator;
 
     public void Open()
     {
@@ -19,22 +21,30 @@ public class NewMapMenu : MonoBehaviour
 
     void CreateMap(int x, int z)
     {
-        hexGrid.CreateMap(x, z);
+        if (generateMaps)
+            mapGenerator.GenerateMap(x, z);
+        else
+            hexGrid.CreateMap(x, z);
         Close();
     }
 
     public void CreateSmallMap()
     {
-        CreateMap(4, 4);
+        CreateMap(4 * HexMetrics.chunkSizeX, 4 * HexMetrics.chunkSizeZ);
     }
 
     public void CreateMediumMap()
     {
-        CreateMap(7, 7);
+        CreateMap(7 * HexMetrics.chunkSizeX, 7 * HexMetrics.chunkSizeZ);
     }
 
     public void CreateLargeMap()
     {
-        CreateMap(10, 10);
+        CreateMap(10 * HexMetrics.chunkSizeX, 10 * HexMetrics.chunkSizeZ);
+    }
+
+    public void ToggleMapGeneration(bool toggle)
+    {
+        generateMaps = toggle;
     }
 }

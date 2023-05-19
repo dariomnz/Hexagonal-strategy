@@ -9,10 +9,11 @@ using System.IO;
 public class HexGrid : MonoBehaviour
 {
     [Min(1)]
-    public int chunkCountX = 4, chunkCountZ = 3;
+    public int cellCountX = 30, cellCountZ = 30;
+    int chunkCountX, chunkCountZ;
 
-    private int cellCountX { get { return chunkCountX * HexMetrics.chunkSizeX; } }
-    private int cellCountZ { get { return chunkCountZ * HexMetrics.chunkSizeZ; } }
+    // private int cellCountX { get { return chunkCountX * HexMetrics.chunkSizeX; } }
+    // private int cellCountZ { get { return chunkCountZ * HexMetrics.chunkSizeZ; } }
 
     public HexCell cellPrefab;
     public HexGridChunk chunkPrefab;
@@ -39,19 +40,22 @@ public class HexGrid : MonoBehaviour
 
     public void CreateMap()
     {
-        CreateMap(chunkCountX, chunkCountZ);
+        CreateMap(cellCountX, cellCountZ);
     }
 
-    public void CreateMap(int chunksX, int chunksZ)
+    public void CreateMap(int _cellCountX, int _cellCountZ)
     {
-        if (chunksX <= 0 || chunksZ <= 0)
+        if (_cellCountX < HexMetrics.chunkSizeX || _cellCountZ < HexMetrics.chunkSizeZ)
         {
             Debug.LogError("Unsupported map size.");
             return;
         }
+        cellCountX = _cellCountX;
+        cellCountZ = _cellCountZ;
 
-        chunkCountX = chunksX;
-        chunkCountZ = chunksZ;
+        chunkCountX = cellCountX / HexMetrics.chunkSizeX;
+        chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
+
 
         foreach (Transform child in transform)
         {
@@ -191,10 +195,20 @@ public class HexGrid : MonoBehaviour
             return null;
     }
 
+    public HexCell GetCell(int xOffset, int zOffset)
+    {
+        return cells[xOffset + zOffset * cellCountX];
+    }
+
+    public HexCell GetCell(int cellIndex)
+    {
+        return cells[cellIndex];
+    }
+
     public void Save(BinaryWriter writer)
     {
-        writer.Write(chunkCountX);
-        writer.Write(chunkCountZ);
+        writer.Write(cellCountX);
+        writer.Write(cellCountX);
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Save(writer);
