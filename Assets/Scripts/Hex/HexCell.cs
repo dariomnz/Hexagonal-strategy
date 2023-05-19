@@ -6,6 +6,7 @@ using System.IO;
 
 public class HexCell : MonoBehaviour
 {
+    [SerializeField]
     HexTerrains.HexType terrainType;
     public HexTerrains.HexType TerrainType
     {
@@ -19,6 +20,7 @@ public class HexCell : MonoBehaviour
             }
         }
     }
+    [SerializeField]
     int elevation;
     public int Elevation
     {
@@ -35,18 +37,29 @@ public class HexCell : MonoBehaviour
         }
     }
     public HexCoordinates coordinates;
+    public HexFeatureManager featureManager;
     public HexCell[] neighbors;
     [SerializeField]
     bool[] roads;
     MeshCollider meshCollider;
+    MeshFilter meshFilter;
     [NonSerialized]
     public HexGridChunk chunk;
+
+    public void Refresh() => enabled = true;
 
     void Awake()
     {
         meshCollider = gameObject.AddComponent<MeshCollider>();
         meshCollider.convex = true;
-        meshCollider.sharedMesh = GetComponentInChildren<MeshFilter>().sharedMesh;
+        meshFilter = GetComponentInChildren<MeshFilter>();
+        meshCollider.sharedMesh = meshFilter.sharedMesh;
+    }
+
+    void LateUpdate()
+    {
+        UpdateMesh();
+        enabled = false;
     }
 
     public void UpdateMesh()
@@ -58,9 +71,10 @@ public class HexCell : MonoBehaviour
     {
         if (newTilePrefab == null)
             return;
-        DestroyImmediate(GetComponentInChildren<MeshFilter>().gameObject);
-        transform.eulerAngles = Vector3.up * -60 * (rotations);
-        Instantiate(newTilePrefab, transform.position, transform.rotation, transform);
+        DestroyImmediate(meshFilter.gameObject);
+        GameObject newMeshGameObject = Instantiate(newTilePrefab, transform.position, transform.rotation, transform);
+        newMeshGameObject.transform.eulerAngles = Vector3.up * -60 * (rotations);
+        meshFilter = newMeshGameObject.GetComponent<MeshFilter>();
     }
 
     public HexCell GetNeighbor(HexDirection direction)
@@ -102,14 +116,15 @@ public class HexCell : MonoBehaviour
     {
         roads[index] = state;
         neighbors[index].roads[(int)((HexDirection)index).Opposite()] = state;
-        UpdateMesh();
-        neighbors[index].UpdateMesh();
+        Refresh();
+        neighbors[index].Refresh();
     }
 
     public void Save(BinaryWriter writer)
     {
         writer.Write((byte)terrainType);
         writer.Write((byte)elevation);
+        writer.Write((byte)featureManager.currentFeature);
         int roadFlags = 0;
         for (int i = 0; i < roads.Length; i++)
             if (roads[i])
@@ -121,11 +136,12 @@ public class HexCell : MonoBehaviour
     {
         terrainType = (HexTerrains.HexType)reader.ReadByte();
         Elevation = reader.ReadByte();
+        featureManager.AddFeature(this, (HexFeatureManager.Features)reader.ReadByte());
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)
             roads[i] = (roadFlags & (1 << i)) != 0;
 
-        UpdateMesh();
+        Refresh();
     }
 
 }

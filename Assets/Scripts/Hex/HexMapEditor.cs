@@ -8,11 +8,13 @@ public class HexMapEditor : MonoBehaviour
 {
     public HexGrid hexGrid;
 
-    GameObject activeTilePrefab;
+    // GameObject activeTilePrefab;
     int activeElevation;
     int brushSize;
     bool applyElevation = false;
     HexTerrains.HexType activeTerrainType;
+    bool applyFeature = false;
+    HexFeatureManager.Features activeFeature;
     enum OptionalToggle
     {
         Ignore, Yes, No
@@ -22,11 +24,6 @@ public class HexMapEditor : MonoBehaviour
     bool isDrag;
     HexDirection dragDirection;
     HexCell previousCell;
-
-    void Awake()
-    {
-
-    }
 
     void Update()
     {
@@ -99,6 +96,13 @@ public class HexMapEditor : MonoBehaviour
             cell.TerrainType = activeTerrainType;
         if (applyElevation)
             cell.Elevation = activeElevation;
+        if (applyFeature)
+        {
+            if (activeFeature == HexFeatureManager.Features.None)
+                cell.featureManager.Clear();
+            else
+                cell.featureManager.AddFeature(cell, activeFeature);
+        }
         if (roadMode == OptionalToggle.No)
             cell.RemoveRoads();
         if (isDrag)
@@ -125,13 +129,25 @@ public class HexMapEditor : MonoBehaviour
     {
         activeElevation = (int)elevation;
     }
+
     public void SetApplyElevation(bool toggle)
     {
         applyElevation = toggle;
     }
+
+    public void SetApplyFeature(bool toggle)
+    {
+        applyFeature = toggle;
+    }
+
     public void SetRoadMode(int mode)
     {
         roadMode = (OptionalToggle)mode;
+    }
+
+    public void SetFeature(int index)
+    {
+        activeFeature = (HexFeatureManager.Features)index;
     }
 
     public void ShowUI(bool visible)
