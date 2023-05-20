@@ -50,7 +50,7 @@ public class HexCell : MonoBehaviour
         set
         {
             distance = value;
-            UpdateLabel();
+            // UpdateLabel();
         }
     }
 
@@ -61,7 +61,7 @@ public class HexCell : MonoBehaviour
         set
         {
             searchHeuristic = value;
-            UpdateLabel();
+            // UpdateLabel();
         }
     }
     public HexCoordinates coordinates;
@@ -77,6 +77,7 @@ public class HexCell : MonoBehaviour
     public RectTransform uiRect;
     public HexCell PathFrom { get; set; }
     public HexCell NextWithSamePriority { get; set; }
+    public int SearchPhase { get; set; }
 
     public void Refresh() => enabled = true;
 
@@ -154,7 +155,8 @@ public class HexCell : MonoBehaviour
 
     public void UpdateLabel()
     {
-        TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
+        string text = "";
+        // TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
 
         // label.text = coordinates.ToString();
         // int neighborscount = 0;
@@ -166,8 +168,10 @@ public class HexCell : MonoBehaviour
         // label.text += "\nDist: " + (distance == int.MaxValue ? "" : distance.ToString());
 
 
-        label.text = distance == int.MaxValue ? "" : distance.ToString();
-        label.text += "\n" + (SearchHeuristic == 0 ? "" : SearchHeuristic.ToString());
+        text = distance == int.MaxValue ? "" : distance.ToString();
+        text += "\n" + (SearchHeuristic == 0 ? "" : SearchHeuristic.ToString());
+
+        SetLabel(text);
     }
 
     public int SearchPriority { get { return distance + SearchHeuristic; } }
@@ -183,6 +187,12 @@ public class HexCell : MonoBehaviour
         Image highlight = uiRect.GetChild(0).GetComponent<Image>();
         highlight.color = color;
         highlight.enabled = true;
+    }
+
+    public void SetLabel(string text)
+    {
+        TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
+        label.text = text;
     }
 
     public void Save(BinaryWriter writer)
