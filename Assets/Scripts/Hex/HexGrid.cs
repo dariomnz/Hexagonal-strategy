@@ -33,7 +33,7 @@ public class HexGrid : MonoBehaviour
 
     void Start()
     {
-        CreateMap();
+        StartCoroutine(CreateMap(cellCountX, cellCountZ));
     }
 
     public Vector3 GetPosition(HexCoordinates coordinates)
@@ -44,11 +44,6 @@ public class HexGrid : MonoBehaviour
         position.y = 0;
         // position.y = Mathf.PerlinNoise(position.x, position.z);
         return position;
-    }
-
-    public void CreateMap()
-    {
-        CreateMap(cellCountX, cellCountZ);
     }
 
     public void DeleteMap()
@@ -63,13 +58,14 @@ public class HexGrid : MonoBehaviour
         cells = null;
     }
 
-    public void CreateMap(int _cellCountX, int _cellCountZ)
+    public IEnumerator CreateMap(int _cellCountX, int _cellCountZ)
     {
+        LoadingScreen.Instance.Open();
         ClearPath();
         if (_cellCountX < HexMetrics.chunkSizeX || _cellCountZ < HexMetrics.chunkSizeZ)
         {
             Debug.LogError("Unsupported map size.");
-            return;
+            yield break;
         }
         cellCountX = _cellCountX;
         cellCountZ = _cellCountZ;
@@ -82,7 +78,9 @@ public class HexGrid : MonoBehaviour
         DeleteMap();
 
         CreateChunks();
-        CreateCells();
+        yield return StartCoroutine(CreateCells());
+
+        LoadingScreen.Instance.Close();
     }
 
     void CreateChunks()
@@ -111,7 +109,7 @@ public class HexGrid : MonoBehaviour
         chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
     }
 
-    void CreateCells()
+    IEnumerator CreateCells()
     {
         cells = new HexCell[cellCountX * cellCountZ];
 
@@ -125,6 +123,9 @@ public class HexGrid : MonoBehaviour
                 AddCellToChunk(x, z, cell);
                 i++;
             }
+
+            LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 3));
+            yield return null;
         }
 
         for (int z = 0, i = 0; z < cellCountZ; z++)
@@ -176,11 +177,17 @@ public class HexGrid : MonoBehaviour
                 }
                 i++;
             }
+
+            LoadingScreen.Instance.UpdateLoading((i + cellCount) / ((float)cellCount * 3));
+            yield return null;
         }
 
-        foreach (var cell in cells)
+        System.Diagnostics.Stopwatch sw2 = new System.Diagnostics.Stopwatch();
+        sw2.Start();
+        Debug.Log("Empieza");
+        for (int i = 0; i < cells.Length; i++)
         {
-
+            HexCell cell = cells[i];
             TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab);
             label.rectTransform.SetParent(cell.chunk.gridCanvas.transform, false);
             label.rectTransform.anchoredPosition =
@@ -188,7 +195,16 @@ public class HexGrid : MonoBehaviour
 
             cell.uiRect = label.rectTransform;
             cell.UpdateLabel();
+
+            if (i % cellCountZ == 0)
+            {
+                LoadingScreen.Instance.UpdateLoading((i + cellCount * 2) / ((float)cellCount * 3));
+                yield return null;
+            }
         }
+
+        sw2.Stop();
+        Debug.Log(string.Format("Acaba en: {0}ms", sw2.ElapsedMilliseconds));
     }
 
     public HexCell GetCell(Vector3 worldPosition)
@@ -217,8 +233,8 @@ public class HexGrid : MonoBehaviour
     }
 
     public void FindPath(HexCell fromCell, HexCell toCell)
-    {   
-        
+    {
+
         // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         // sw.Start();
         ClearPath();
@@ -365,10 +381,10 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-    public void Load(BinaryReader reader)
+    public IEnumerator Load(BinaryReader reader)
     {
         StopAllCoroutines();
-        CreateMap(reader.ReadInt32(), reader.ReadInt32());
+        yield return StartCoroutine(CreateMap(reader.ReadInt32(), reader.ReadInt32()));
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Load(reader);

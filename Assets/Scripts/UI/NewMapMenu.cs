@@ -1,5 +1,5 @@
 using UnityEngine;
-using System;
+using System.Collections;
 
 public class NewMapMenu : MonoBehaviour
 {
@@ -9,38 +9,40 @@ public class NewMapMenu : MonoBehaviour
 
     public void Open()
     {
-        gameObject.SetActive(true);
+        // gameObject.SetActive(true);
+        GetComponent<Canvas>().enabled = true;
         CameraController.Locked = true;
     }
 
     public void Close()
     {
-        gameObject.SetActive(false);
+        // gameObject.SetActive(false);
+        GetComponent<Canvas>().enabled = false;
         CameraController.Locked = false;
     }
 
-    void CreateMap(int x, int z)
+    IEnumerator CreateMap(int x, int z)
     {
-        if (generateMaps)
-            mapGenerator.GenerateMap(x, z);
-        else
-            hexGrid.CreateMap(x, z);
         Close();
+        if (generateMaps)
+            yield return StartCoroutine(mapGenerator.GenerateMap(x, z));
+        else
+            yield return StartCoroutine(hexGrid.CreateMap(x, z));
     }
 
     public void CreateSmallMap()
     {
-        CreateMap(4 * HexMetrics.chunkSizeX, 4 * HexMetrics.chunkSizeZ);
+        StartCoroutine(CreateMap(4 * HexMetrics.chunkSizeX, 4 * HexMetrics.chunkSizeZ));
     }
 
     public void CreateMediumMap()
     {
-        CreateMap(7 * HexMetrics.chunkSizeX, 7 * HexMetrics.chunkSizeZ);
+        StartCoroutine(CreateMap(7 * HexMetrics.chunkSizeX, 7 * HexMetrics.chunkSizeZ));
     }
 
     public void CreateLargeMap()
     {
-        CreateMap(10 * HexMetrics.chunkSizeX, 10 * HexMetrics.chunkSizeZ);
+        StartCoroutine(CreateMap(10 * HexMetrics.chunkSizeX, 10 * HexMetrics.chunkSizeZ));
     }
 
     public void ToggleMapGeneration(bool toggle)

@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.IO;
 using System;
+using System.Collections;
 
 public class SaveLoadMenu : MonoBehaviour
 {
@@ -26,13 +27,15 @@ public class SaveLoadMenu : MonoBehaviour
             actionButtonLabel.text = "Load";
         }
         FillList();
-        gameObject.SetActive(true);
+        // gameObject.SetActive(true);
+        GetComponent<Canvas>().enabled = true;
         CameraController.Locked = true;
     }
 
     public void Close()
     {
-        gameObject.SetActive(false);
+        // gameObject.SetActive(false);
+        GetComponent<Canvas>().enabled = false;
         CameraController.Locked = false;
     }
 
@@ -75,7 +78,7 @@ public class SaveLoadMenu : MonoBehaviour
         if (saveMode)
             Save(path);
         else
-            Load(path);
+            StartCoroutine(Load(path));
         Close();
     }
 
@@ -103,20 +106,20 @@ public class SaveLoadMenu : MonoBehaviour
         }
     }
 
-    public void Load(string path)
+    public IEnumerator Load(string path)
     {
         // string path = Path.Combine(Application.persistentDataPath, "test.map");
         if (!File.Exists(path))
         {
             Debug.LogError("File does not exist " + path);
-            return;
+            yield break;
         }
         using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
         {
             int header = reader.ReadInt32();
             if (header == 0)
             {
-                hexGrid.Load(reader);
+                yield return StartCoroutine(hexGrid.Load(reader));
             }
             else
             {

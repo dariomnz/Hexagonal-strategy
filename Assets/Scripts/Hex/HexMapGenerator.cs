@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,7 +30,7 @@ public class HexMapGenerator : MonoBehaviour
     HexCellPriorityQueue searchFrontier;
     int searchFrontierPhase;
 
-    public void GenerateMap(int x, int z)
+    public IEnumerator GenerateMap(int x, int z)
     {
         Random.State originalRandomState = Random.state;
         if (!useFixedSeed)
@@ -40,7 +41,12 @@ public class HexMapGenerator : MonoBehaviour
             seed &= int.MaxValue;
         }
         Random.InitState(seed);
-        grid.CreateMap(x, z);
+        // System.Diagnostics.Stopwatch sw2 = new System.Diagnostics.Stopwatch();
+        // sw2.Start();
+        // Debug.Log("Empieza");
+        yield return StartCoroutine(grid.CreateMap(x, z));
+        // sw2.Stop();
+        // Debug.Log(string.Format("Acaba en: {0}ms", sw2.ElapsedMilliseconds));
         // for (int i = 0; i < z; i++)
         // {
         //     grid.GetCell(x / 2, i).TerrainType = HexTerrains.HexType.Rock;
@@ -53,7 +59,8 @@ public class HexMapGenerator : MonoBehaviour
         {
             grid.GetCell(i).waterLevel = waterLevel;
         }
-        CreateLand();
+
+        yield return StartCoroutine(CreateLand());
         SetTerrainType();
         // RaiseTerrain(Random.Range(chunkSizeMin, chunkSizeMax + 1));
         for (int i = 0; i < grid.cellCount; i++)
@@ -63,9 +70,11 @@ public class HexMapGenerator : MonoBehaviour
         Random.state = originalRandomState;
     }
 
-    void CreateLand()
+    IEnumerator CreateLand()
     {
-        int landBudget = Mathf.RoundToInt(grid.cellCount * landPercentage * 0.01f);
+        LoadingScreen.Instance.Open();
+        int totalLandBudget = Mathf.RoundToInt(grid.cellCount * landPercentage * 0.01f);
+        int landBudget = totalLandBudget;
         while (landBudget > 0)
         {
             int chunkSize = Random.Range(chunkSizeMin, chunkSizeMax - 1);
@@ -73,7 +82,11 @@ public class HexMapGenerator : MonoBehaviour
                 landBudget = SinkTerrain(chunkSize, landBudget);
             else
                 landBudget = RaiseTerrain(chunkSize, landBudget);
+
+            LoadingScreen.Instance.UpdateLoading((totalLandBudget - landBudget) / (float)totalLandBudget);
+            yield return null;
         }
+        LoadingScreen.Instance.Close();
     }
 
     int RaiseTerrain(int chunkSize, int budget)
