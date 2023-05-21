@@ -13,6 +13,7 @@ public class HexTerrains : ScriptableObject
         Sand,
         Grass,
         Rock,
+        Snow,
     };
 
     public enum HexRoadsConf
@@ -105,15 +106,5 @@ public class HexTerrains : ScriptableObject
         }
 
         return terrainRoads[conf];
-    }
-
-    public static HexType GetHexTerrainType(int elevation)
-    {
-        int enumLength = Enum.GetNames(typeof(HexType)).Length;
-        if (elevation >= enumLength - 1)
-            return (HexType)(enumLength - 2);
-        if (elevation < 0)
-            return HexType.Water;
-        return (HexType)elevation;
     }
 }

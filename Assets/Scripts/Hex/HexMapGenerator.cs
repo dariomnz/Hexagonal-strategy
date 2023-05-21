@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 
 public class HexMapGenerator : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class HexMapGenerator : MonoBehaviour
     public int elevationMinimum = -2;
     [Range(6, 10)]
     public int elevationMaximum = 8;
+    [Range(0, 100)]
+    public int erosionPercentage = 50;
 
     HexCellPriorityQueue searchFrontier;
     int searchFrontierPhase;
@@ -41,16 +44,7 @@ public class HexMapGenerator : MonoBehaviour
             seed &= int.MaxValue;
         }
         Random.InitState(seed);
-        // System.Diagnostics.Stopwatch sw2 = new System.Diagnostics.Stopwatch();
-        // sw2.Start();
-        // Debug.Log("Empieza");
         yield return StartCoroutine(grid.CreateMap(x, z));
-        // sw2.Stop();
-        // Debug.Log(string.Format("Acaba en: {0}ms", sw2.ElapsedMilliseconds));
-        // for (int i = 0; i < z; i++)
-        // {
-        //     grid.GetCell(x / 2, i).TerrainType = HexTerrains.HexType.Rock;
-        // }
         if (searchFrontier == null)
         {
             searchFrontier = new HexCellPriorityQueue();
@@ -61,8 +55,8 @@ public class HexMapGenerator : MonoBehaviour
         }
 
         yield return StartCoroutine(CreateLand());
+        ErodeLand();
         SetTerrainType();
-        // RaiseTerrain(Random.Range(chunkSizeMin, chunkSizeMax + 1));
         for (int i = 0; i < grid.cellCount; i++)
         {
             grid.GetCell(i).SearchPhase = 0;
@@ -87,6 +81,82 @@ public class HexMapGenerator : MonoBehaviour
             yield return null;
         }
         LoadingScreen.Instance.Close();
+    }
+    void ErodeLand()
+    {
+        List<HexCell> erodibleCells = ListPool<HexCell>.Get();
+        for (int i = 0; i < grid.cellCount; i++)
+        {
+            HexCell cell = grid.GetCell(i);
+            if (IsErodible(cell))
+            {
+                erodibleCells.Add(cell);
+            }
+        }
+        int targetErodibleCount =
+            (int)(erodibleCells.Count * (100 - erosionPercentage) * 0.01f);
+
+        while (erodibleCells.Count > targetErodibleCount)
+        {
+            int index = Random.Range(0, erodibleCells.Count);
+            HexCell cell = erodibleCells[index];
+            HexCell targetCell = GetErosionTarget(cell);
+
+            cell.Elevation -= 1;
+            targetCell.Elevation += 1;
+            if (!IsErodible(cell))
+            {
+                erodibleCells[index] = erodibleCells[erodibleCells.Count - 1];
+                erodibleCells.RemoveAt(erodibleCells.Count - 1);
+            }
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                HexCell neighbor = cell.GetNeighbor(d);
+                if (
+                    neighbor && neighbor.Elevation == cell.Elevation + 2 &&
+                    !erodibleCells.Contains(neighbor)
+                )
+                {
+                    erodibleCells.Add(neighbor);
+                }
+            }
+            if (IsErodible(targetCell) && !erodibleCells.Contains(targetCell))
+            {
+                erodibleCells.Add(targetCell);
+            }
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                HexCell neighbor = targetCell.GetNeighbor(d);
+                if (
+                    neighbor && neighbor != cell &&
+                    neighbor.Elevation == targetCell.Elevation + 1 &&
+                    !IsErodible(neighbor)
+                )
+                {
+                    erodibleCells.Remove(neighbor);
+                }
+            }
+        }
+
+        ListPool<HexCell>.Release(erodibleCells);
+    }
+
+    HexCell GetErosionTarget(HexCell cell)
+    {
+        List<HexCell> candidates = ListPool<HexCell>.Get();
+        int erodibleElevation = cell.Elevation - 2;
+        for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+        {
+            HexCell neighbor = cell.GetNeighbor(d);
+            if (neighbor && neighbor.Elevation <= erodibleElevation)
+            {
+                candidates.Add(neighbor);
+            }
+        }
+
+        HexCell target = candidates[Random.Range(0, candidates.Count)];
+        ListPool<HexCell>.Release(candidates);
+        return target;
     }
 
     int RaiseTerrain(int chunkSize, int budget)
@@ -174,7 +244,7 @@ public class HexMapGenerator : MonoBehaviour
         {
             HexCell cell = grid.GetCell(i);
             if (!cell.IsUnderwater)
-                cell.TerrainType = HexTerrains.GetHexTerrainType(cell.Elevation);
+                cell.TerrainType = GetHexTerrainType(cell.Elevation);
             else
             {
                 cell.TerrainType = HexTerrains.HexType.Water;
@@ -184,8 +254,37 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
+    public HexTerrains.HexType GetHexTerrainType(int elevation)
+    {
+        int enumLength = System.Enum.GetNames(typeof(HexTerrains.HexType)).Length;
+        int bin = (elevationMaximum - waterLevel) / (enumLength - 1);
+
+        for (int i = 1; i < enumLength; i++)
+        {
+            if (elevation < waterLevel + (bin * i))
+                return (HexTerrains.HexType)(i - 1);
+        }
+        if (elevation <= 0)
+            return HexTerrains.HexType.Water;
+        return (HexTerrains.HexType)enumLength - 2;
+    }
+
     HexCell GetRandomCell()
     {
         return grid.GetCell(Random.Range(0, grid.cellCount));
+    }
+
+    bool IsErodible(HexCell cell)
+    {
+        int erodibleElevation = cell.Elevation - 2;
+        for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+        {
+            HexCell neighbor = cell.GetNeighbor(d);
+            if (neighbor && neighbor.Elevation <= erodibleElevation)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
