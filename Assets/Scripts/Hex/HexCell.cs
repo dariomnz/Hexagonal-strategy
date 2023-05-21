@@ -78,6 +78,9 @@ public class HexCell : MonoBehaviour
     public HexCell PathFrom { get; set; }
     public HexCell NextWithSamePriority { get; set; }
     public int SearchPhase { get; set; }
+    public int waterLevel { get; set; }
+
+    public bool IsUnderwater => waterLevel > elevation;
 
     public void Refresh() => enabled = true;
 
@@ -198,7 +201,7 @@ public class HexCell : MonoBehaviour
     public void Save(BinaryWriter writer)
     {
         writer.Write((byte)terrainType);
-        writer.Write((byte)elevation);
+        writer.Write((byte)(elevation + 127));
         writer.Write((byte)featureManager.currentFeature);
         int roadFlags = 0;
         for (int i = 0; i < roads.Length; i++)
@@ -210,7 +213,7 @@ public class HexCell : MonoBehaviour
     public void Load(BinaryReader reader)
     {
         terrainType = (HexTerrains.HexType)reader.ReadByte();
-        Elevation = reader.ReadByte();
+        Elevation = reader.ReadByte() - 127;
         featureManager.AddFeature(this, (HexFeatureManager.Features)reader.ReadByte());
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)

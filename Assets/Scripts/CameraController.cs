@@ -28,7 +28,7 @@ public class CameraController : MonoBehaviour
     }
     float originSpeed;
     public float speed = 10f;
-    public int cameraDragSpeed = 100;
+    public int cameraDragSpeed = 300;
 
     Vector3 angle;
     // Start is called before the first frame update

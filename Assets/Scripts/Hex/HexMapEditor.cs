@@ -12,7 +12,7 @@ public class HexMapEditor : MonoBehaviour
     int activeElevation;
     int brushSize;
     bool applyElevation = false;
-    HexTerrains.HexType activeTerrainType;
+    HexTerrains.HexType activeTerrainType = HexTerrains.HexType.None;
     bool applyFeature = false;
     HexFeatureManager.Features activeFeature;
     enum OptionalToggle
@@ -55,7 +55,7 @@ public class HexMapEditor : MonoBehaviour
                         searchFromCell.DisableHighlight();
                     searchFromCell = currentCell;
                     searchFromCell.EnableHighlight(Color.blue);
-                    if (searchToCell)
+                    if (searchFromCell && searchToCell)
                         hexGrid.FindPath(searchFromCell, searchToCell);
                 }
             }
@@ -64,7 +64,8 @@ public class HexMapEditor : MonoBehaviour
                 if (searchToCell != currentCell)
                 {
                     searchToCell = currentCell;
-                    hexGrid.FindPath(searchFromCell, searchToCell);
+                    if (searchFromCell && searchToCell)
+                        hexGrid.FindPath(searchFromCell, searchToCell);
                 }
             }
 

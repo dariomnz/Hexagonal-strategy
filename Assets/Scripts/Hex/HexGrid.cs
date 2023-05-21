@@ -10,6 +10,7 @@ public class HexGrid : MonoBehaviour
 {
     [Min(1)]
     public int cellCountX = 30, cellCountZ = 30;
+    public int cellCount { get => cellCountX * cellCountZ; }
     int chunkCountX, chunkCountZ;
 
     // private int cellCountX { get { return chunkCountX * HexMetrics.chunkSizeX; } }
@@ -216,7 +217,8 @@ public class HexGrid : MonoBehaviour
     }
 
     public void FindPath(HexCell fromCell, HexCell toCell)
-    {
+    {   
+        
         // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         // sw.Start();
         ClearPath();

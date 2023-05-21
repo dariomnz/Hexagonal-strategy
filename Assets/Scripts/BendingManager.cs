@@ -91,11 +91,13 @@ public class BendingManager : MonoBehaviour
             Shader.DisableKeyword(BENDING_FEATURE);
     }
 
-    private static void OnBeginCameraRendering(ScriptableRenderContext ctx,
+    private void OnBeginCameraRendering(ScriptableRenderContext ctx,
                                                 Camera cam)
     {
-        // cam.cullingMatrix = Matrix4x4.Ortho(-99, 99, -99, 99, 0.001f, 99) *
-        //                     cam.worldToCameraMatrix;
+
+        if (Application.isPlaying && Activate)
+            cam.cullingMatrix = Matrix4x4.Ortho(-99, 99, -99, 99, 0.001f, 99) *
+                                cam.worldToCameraMatrix;
     }
 
     private static void OnEndCameraRendering(ScriptableRenderContext ctx,

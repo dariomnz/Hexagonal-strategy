@@ -1,16 +1,18 @@
 using UnityEngine;
 using RotaryHeart.Lib.SerializableDictionary;
 using System.Collections.Generic;
+using System;
 
 [CreateAssetMenu(fileName = "HexTerrains", menuName = "ScriptableObjects/HexTerrains", order = 1)]
 public class HexTerrains : ScriptableObject
 {
     public enum HexType
     {
+        None = -1,
+        Water,
+        Sand,
         Grass,
         Rock,
-        Sand,
-        Water,
     };
 
     public enum HexRoadsConf
@@ -103,5 +105,15 @@ public class HexTerrains : ScriptableObject
         }
 
         return terrainRoads[conf];
+    }
+
+    public static HexType GetHexTerrainType(int elevation)
+    {
+        int enumLength = Enum.GetNames(typeof(HexType)).Length;
+        if (elevation >= enumLength - 1)
+            return (HexType)(enumLength - 2);
+        if (elevation < 0)
+            return HexType.Water;
+        return (HexType)elevation;
     }
 }
