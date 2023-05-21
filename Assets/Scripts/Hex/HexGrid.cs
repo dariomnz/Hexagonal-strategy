@@ -122,6 +122,7 @@ public class HexGrid : MonoBehaviour
                 HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, map.transform);
                 cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
                 cell.transform.localPosition = GetPosition(cell.coordinates);
+                cell.Index = i;
                 AddCellToChunk(x, z, cell);
                 i++;
             }
@@ -184,9 +185,6 @@ public class HexGrid : MonoBehaviour
             yield return null;
         }
 
-        System.Diagnostics.Stopwatch sw2 = new System.Diagnostics.Stopwatch();
-        sw2.Start();
-        Debug.Log("Empieza");
         for (int i = 0; i < cells.Length; i++)
         {
             HexCell cell = cells[i];
@@ -204,9 +202,6 @@ public class HexGrid : MonoBehaviour
                 yield return null;
             }
         }
-
-        sw2.Stop();
-        Debug.Log(string.Format("Acaba en: {0}ms", sw2.ElapsedMilliseconds));
     }
 
     public HexCell GetCell(Vector3 worldPosition)

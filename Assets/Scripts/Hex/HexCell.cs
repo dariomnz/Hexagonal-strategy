@@ -71,10 +71,9 @@ public class HexCell : MonoBehaviour
     bool[] roads;
     MeshCollider meshCollider;
     MeshFilter meshFilter;
-    [NonSerialized]
-    public HexGridChunk chunk;
-    [NonSerialized]
-    public RectTransform uiRect;
+    public HexGridChunk chunk { get; set; }
+    public int Index { get; set; }
+    public RectTransform uiRect { get; set; }
     public HexCell PathFrom { get; set; }
     public HexCell NextWithSamePriority { get; set; }
     public int SearchPhase { get; set; }

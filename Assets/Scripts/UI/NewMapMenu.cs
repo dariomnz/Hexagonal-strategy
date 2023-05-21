@@ -23,11 +23,16 @@ public class NewMapMenu : MonoBehaviour
 
     IEnumerator CreateMap(int x, int z)
     {
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         Close();
         if (generateMaps)
             yield return StartCoroutine(mapGenerator.GenerateMap(x, z));
         else
             yield return StartCoroutine(hexGrid.CreateMap(x, z));
+
+        sw.Stop();
+        Debug.Log(string.Format("Create map in: {0}ms", sw.ElapsedMilliseconds));
     }
 
     public void CreateSmallMap()
