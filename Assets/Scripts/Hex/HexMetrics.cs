@@ -24,7 +24,8 @@ public class HexMetrics : MonoBehaviour
     public const int chunkSizeX = 6, chunkSizeZ = 6;
     public static int cellSizeX = 0, cellSizeZ = 0;
 
-    public const float xRadius = 2f, zRadius = 1.725f;
+    public const float xDiameter = 2f, zDiameter = 1.725f;
+    public const float xRadius = xDiameter / 2f, zRadius = zDiameter / 2f;
 
     public const float elevationStep = 0.5f;
 

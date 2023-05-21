@@ -25,8 +25,8 @@ public struct HexCoordinates
 
     public static HexCoordinates FromPosition(Vector3 position)
     {
-        float x = (position.x - position.z / (HexMetrics.zRadius)) / (HexMetrics.xRadius);
-        float y = position.z / (HexMetrics.zRadius);
+        float x = (position.x - position.z / (HexMetrics.zDiameter)) / (HexMetrics.xDiameter);
+        float y = position.z / (HexMetrics.zDiameter);
         int iX = Mathf.RoundToInt(x);
         int iY = Mathf.RoundToInt(y);
         int iZ = Mathf.RoundToInt(-x - y);

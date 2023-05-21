@@ -9,7 +9,6 @@ public class CameraController : MonoBehaviour
     private void Awake()
     {
         // If there is an instance, and it's not me, delete myself.
-
         if (Instance != null && Instance != this)
         {
             Destroy(this);
@@ -29,13 +28,22 @@ public class CameraController : MonoBehaviour
     float originSpeed;
     public float speed = 10f;
     public int cameraDragSpeed = 300;
+    public HexGrid hexGrid;
 
     Vector3 angle;
-    // Start is called before the first frame update
+
     void Start()
     {
         originSpeed = speed;
         angle = transform.eulerAngles;
+    }
+
+    public void ValidatePosition()
+    {
+        Vector3 position = transform.position;
+        position.x = hexGrid.cellCountX / 2 * HexMetrics.xDiameter;
+        position.z = hexGrid.cellCountZ / 2 * HexMetrics.zDiameter;
+        transform.position = position;
     }
 
     void Update()
@@ -50,6 +58,7 @@ public class CameraController : MonoBehaviour
         transform.position += Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized * Input.GetAxis("Horizontal") * speed * Time.deltaTime;
         transform.position += Vector3.up * Input.GetAxis("Vertical Movement") * speed * Time.deltaTime;
         transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * speed * 300 * Time.deltaTime;
+        hexGrid.CenterMap(transform.position.x, transform.position.z);
 
         if (Input.GetMouseButton(1))
         {
@@ -60,13 +69,5 @@ public class CameraController : MonoBehaviour
             angle.x = Mathf.Clamp(angle.x, 0, 90);
             transform.eulerAngles = angle;
         }
-    }
-
-    float ClampAngle(float angle, float from, float to)
-    {
-        // accepts e.g. -80, 80
-        if (angle < 0f) angle = 360 + angle;
-        if (angle > 180f) return Mathf.Max(angle, 360 + from);
-        return Mathf.Min(angle, to);
     }
 }

@@ -8,13 +8,11 @@ using System.Collections;
 
 public class HexGrid : MonoBehaviour
 {
+    // Chunks must be pair
     [Min(1)]
-    public int cellCountX = 30, cellCountZ = 30;
+    public int cellCountX = 24, cellCountZ = 24;
     public int cellCount { get => cellCountX * cellCountZ; }
     int chunkCountX, chunkCountZ;
-
-    // private int cellCountX { get { return chunkCountX * HexMetrics.chunkSizeX; } }
-    // private int cellCountZ { get { return chunkCountZ * HexMetrics.chunkSizeZ; } }
 
     public HexCell cellPrefab;
     public TextMeshProUGUI cellLabelPrefab;
@@ -30,6 +28,7 @@ public class HexGrid : MonoBehaviour
     int searchFrontierPhase;
     HexCell currentPathFrom, currentPathTo;
     bool currentPathExists;
+    Vector3 currentCenterIndex = Vector3.zero;
 
     void Start()
     {
@@ -39,8 +38,8 @@ public class HexGrid : MonoBehaviour
     public Vector3 GetPosition(HexCoordinates coordinates)
     {
         Vector3 position;
-        position.x = (coordinates.X + coordinates.Z * 0.5f) * HexMetrics.xRadius;
-        position.z = coordinates.Z * HexMetrics.zRadius;
+        position.x = (coordinates.X + coordinates.Z * 0.5f) * HexMetrics.xDiameter;
+        position.z = coordinates.Z * HexMetrics.zDiameter;
         position.y = 0;
         // position.y = Mathf.PerlinNoise(position.x, position.z);
         return position;
@@ -71,6 +70,7 @@ public class HexGrid : MonoBehaviour
         cellCountZ = _cellCountZ;
         HexMetrics.cellSizeX = cellCountX;
         HexMetrics.cellSizeZ = cellCountZ;
+        CameraController.Instance.ValidatePosition();
 
         chunkCountX = cellCountX / HexMetrics.chunkSizeX;
         chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
@@ -94,6 +94,8 @@ public class HexGrid : MonoBehaviour
                 HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
                 chunk.hexGrid = this;
                 chunk.transform.SetParent(map.transform);
+                chunk.chunkColumnIndex = x;
+                chunk.chunkRowIndex = z;
             }
         }
     }
@@ -230,6 +232,11 @@ public class HexGrid : MonoBehaviour
     public HexCell GetCell(int cellIndex)
     {
         return cells[cellIndex];
+    }
+
+    public HexGridChunk GetChunk(int xOffset, int zOffset)
+    {
+        return chunks[xOffset + zOffset * chunkCountX];
     }
 
     public void FindPath(HexCell fromCell, HexCell toCell)
@@ -369,6 +376,57 @@ public class HexGrid : MonoBehaviour
         {
             chunks[i].ShowUI(visible);
         }
+    }
+
+    public void CenterMap(float xPosition, float zPosition)
+    {
+        int centerColumnIndex = (int)(xPosition / (HexMetrics.xDiameter * HexMetrics.chunkSizeX));
+        int centerRowIndex = (int)(zPosition / (HexMetrics.zDiameter * HexMetrics.chunkSizeZ));
+        if (centerColumnIndex == currentCenterIndex.x && centerRowIndex == currentCenterIndex.z)
+            return;
+
+        currentCenterIndex.x = centerColumnIndex;
+        currentCenterIndex.z = centerRowIndex;
+
+        int minColumnIndex = centerColumnIndex - chunkCountX / 2;
+        int minRowIndex = centerRowIndex - chunkCountZ / 2;
+
+        int originX = minColumnIndex;
+        int originZ = minRowIndex;
+
+        float ChunkXsize = HexMetrics.xDiameter * HexMetrics.chunkSizeX;
+        float superChunkXsize = ChunkXsize * chunkCountX;
+        float ChunkZsize = HexMetrics.zDiameter * HexMetrics.chunkSizeZ;
+        float superChunkZsize = ChunkZsize * chunkCountZ;
+
+        Vector3 position;
+        position.y = 0f;
+
+        for (int z = 0, i = 0; z < chunkCountZ; z++)
+        {
+            for (int x = 0; x < chunkCountX; x++)
+            {
+                int checkX = originX + x;
+                int superChunkX = checkX / chunkCountX;
+                int inSuperChunkX = checkX % chunkCountX;
+                position.x = superChunkX * superChunkXsize + ChunkXsize * inSuperChunkX;
+
+                int checkZ = originZ + z;
+                int superChunkZ = checkZ / chunkCountZ;
+                int inSuperChunkZ = checkZ % chunkCountZ;
+                position.z = superChunkZ * superChunkZsize + ChunkZsize * inSuperChunkZ;
+
+                inSuperChunkX = inSuperChunkX < 0 ? chunkCountX + inSuperChunkX : inSuperChunkX;
+                inSuperChunkZ = inSuperChunkZ < 0 ? chunkCountZ + inSuperChunkZ : inSuperChunkZ;
+
+                HexGridChunk chunk = GetChunk(inSuperChunkX, inSuperChunkZ);
+
+                position.y = chunk.transform.position.y;
+                chunk.transform.position = position;
+                i++;
+            }
+        }
+
     }
 
     public void Save(BinaryWriter writer)

@@ -471,6 +471,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   cameraDragSpeed: 300
+  hexGrid: {fileID: 686871076}
 --- !u!1 &36396536
 GameObject:
   m_ObjectHideFlags: 0
@@ -4359,8 +4360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59fb8e7fa91a9d6459ecdd8d332d2a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cellCountX: 30
-  cellCountZ: 30
+  cellCountX: 24
+  cellCountZ: 24
   cellPrefab: {fileID: -133454396152487064, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}
   cellLabelPrefab: {fileID: 2690722690630842373, guid: 628192a7abf14924d83ef4271d528a1c, type: 3}
   chunkPrefab: {fileID: -7225762099027937627, guid: e53c3f57325107f44a51e60c9b3beef4, type: 3}
@@ -10518,7 +10519,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 6249.7847}
+  m_AnchoredPosition: {x: 0, y: 27200.291}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1567715442

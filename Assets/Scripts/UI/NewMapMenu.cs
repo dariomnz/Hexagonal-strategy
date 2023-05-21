@@ -37,12 +37,12 @@ public class NewMapMenu : MonoBehaviour
 
     public void CreateMediumMap()
     {
-        StartCoroutine(CreateMap(7 * HexMetrics.chunkSizeX, 7 * HexMetrics.chunkSizeZ));
+        StartCoroutine(CreateMap(8 * HexMetrics.chunkSizeX, 8 * HexMetrics.chunkSizeZ));
     }
 
     public void CreateLargeMap()
     {
-        StartCoroutine(CreateMap(10 * HexMetrics.chunkSizeX, 10 * HexMetrics.chunkSizeZ));
+        StartCoroutine(CreateMap(12 * HexMetrics.chunkSizeX, 12 * HexMetrics.chunkSizeZ));
     }
 
     public void ToggleMapGeneration(bool toggle)

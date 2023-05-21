@@ -40,7 +40,10 @@ public class HexMapEditor : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))
         {
-            HexCell currentCell = hexGrid.GetCell(hit.point);
+            HexCell currentCell = hit.collider.GetComponent<HexCell>();
+            if (!currentCell)
+                return;
+            // HexCell currentCell = hexGrid.GetCell(hit.point);
             if (previousCell && previousCell != currentCell)
                 ValidateDrag(currentCell);
             else

@@ -8,6 +8,9 @@ public class HexGridChunk : MonoBehaviour
     public HexGrid hexGrid;
     public Canvas gridCanvas;
 
+    public int chunkColumnIndex {get;set;}
+    public int chunkRowIndex {get;set;}
+
     public HexGridChunk()
     {
         cells = new HexCell[HexMetrics.chunkSizeX * HexMetrics.chunkSizeZ];
