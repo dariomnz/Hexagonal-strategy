@@ -38,7 +38,7 @@ public class HexCell : MonoBehaviour
                     SetRoad(i, false);
 
             Vector3 uiPosition = uiRect.localPosition;
-            uiPosition.z = elevation * -HexMetrics.elevationStep - 1.01f;
+            uiPosition.z = elevation * -HexMetrics.elevationStep - 1.05f;
             uiRect.localPosition = uiPosition;
         }
     }
@@ -83,14 +83,6 @@ public class HexCell : MonoBehaviour
 
     public void Refresh() => enabled = true;
 
-    void Awake()
-    {
-        meshCollider = gameObject.AddComponent<MeshCollider>();
-        meshCollider.convex = true;
-        meshFilter = GetComponentInChildren<MeshFilter>();
-        meshCollider.sharedMesh = meshFilter.sharedMesh;
-    }
-
     void LateUpdate()
     {
         UpdateMesh();
@@ -106,8 +98,10 @@ public class HexCell : MonoBehaviour
     {
         if (newTilePrefab == null)
             return;
-        DestroyImmediate(meshFilter.gameObject);
+        if (meshFilter)
+            DestroyImmediate(meshFilter.gameObject);
         GameObject newMeshGameObject = Instantiate(newTilePrefab, transform.position, transform.rotation, transform);
+        // newMeshGameObject.isStatic = true;
         newMeshGameObject.transform.eulerAngles = Vector3.up * -60 * (rotations);
         meshFilter = newMeshGameObject.GetComponent<MeshFilter>();
     }
@@ -197,7 +191,7 @@ public class HexCell : MonoBehaviour
         label.text = text;
     }
 
-    
+
 
     public void Save(BinaryWriter writer)
     {

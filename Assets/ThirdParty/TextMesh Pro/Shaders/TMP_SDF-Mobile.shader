@@ -187,7 +187,7 @@ SubShader {
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
 			output.underlayParam = half2(layerScale, layerBias);
 			#endif
-
+				
 			return output;
 		}
 

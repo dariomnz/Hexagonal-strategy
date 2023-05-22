@@ -91,11 +91,13 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < chunkCountX; x++)
             {
-                HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
+                HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab, map.transform);
                 chunk.hexGrid = this;
-                chunk.transform.SetParent(map.transform);
-                chunk.chunkColumnIndex = x;
-                chunk.chunkRowIndex = z;
+
+                Vector3 newPosition = Vector3.zero;
+                newPosition.x = HexMetrics.chunkSizeX * HexMetrics.xDiameter * x;
+                newPosition.z = HexMetrics.chunkSizeZ * HexMetrics.zDiameter * z;
+                chunk.transform.position = newPosition;
             }
         }
     }
@@ -104,7 +106,7 @@ public class HexGrid : MonoBehaviour
     {
         int chunkX = x / HexMetrics.chunkSizeX;
         int chunkZ = z / HexMetrics.chunkSizeZ;
-        HexGridChunk chunk = chunks[chunkX + chunkZ * chunkCountX];
+        HexGridChunk chunk = GetChunk(chunkX, chunkZ);
 
         int localX = x - chunkX * HexMetrics.chunkSizeX;
         int localZ = z - chunkZ * HexMetrics.chunkSizeZ;
@@ -119,16 +121,32 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < cellCountX; x++)
             {
-                HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, map.transform);
-                cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-                cell.transform.localPosition = GetPosition(cell.coordinates);
+                HexCoordinates coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+                int chunkX = x / HexMetrics.chunkSizeX;
+                int chunkZ = z / HexMetrics.chunkSizeZ;
+                Vector3 newPosition = GetPosition(coordinates);
+                HexGridChunk chunk = GetChunk(chunkX, chunkZ);
+                HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, chunk.transform);
+                cell.coordinates = coordinates;
+                newPosition.x -= HexMetrics.chunkSizeX * HexMetrics.xDiameter * chunkX;
+                newPosition.z -= HexMetrics.chunkSizeZ * HexMetrics.zDiameter * chunkZ;
+                cell.transform.localPosition = newPosition;
                 cell.Index = i;
                 AddCellToChunk(x, z, cell);
 
-                TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab);
-                label.rectTransform.SetParent(cell.chunk.gridCanvas.transform, false);
-                label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
 
+                // HexCoordinates coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+                // int chunkX = x / HexMetrics.chunkSizeX;
+                // int chunkZ = z / HexMetrics.chunkSizeZ;
+                // Vector3 newPosition = GetPosition(coordinates);
+                // HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, GetChunk(chunkX, chunkZ).transform);
+                // cell.coordinates = coordinates;
+                // cell.transform.position = newPosition;
+                // cell.Index = i;
+                // AddCellToChunk(x, z, cell);
+
+                TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
+                label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
                 cell.uiRect = label.rectTransform;
                 cell.UpdateLabel();
                 i++;
@@ -189,9 +207,11 @@ public class HexGrid : MonoBehaviour
                 }
                 i++;
             }
-
-            LoadingScreen.Instance.UpdateLoading((i + cellCount) / ((float)cellCount * 2));
-            yield return null;
+            if (z % (cellCountZ / 20) == 0)
+            {
+                LoadingScreen.Instance.UpdateLoading((i + cellCount) / ((float)cellCount * 2));
+                yield return null;
+            }
         }
     }
 
@@ -418,7 +438,7 @@ public class HexGrid : MonoBehaviour
     public void Save(BinaryWriter writer)
     {
         writer.Write(cellCountX);
-        writer.Write(cellCountX);
+        writer.Write(cellCountZ);
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Save(writer);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
@@ -10,6 +11,7 @@ public class SaveLoadMenu : MonoBehaviour
     public TMP_InputField nameInput;
     public HexGrid hexGrid;
     public RectTransform listContent;
+    public Scrollbar verticalScrollBar;
     public SaveLoadItem itemPrefab;
     bool saveMode;
 
@@ -27,9 +29,10 @@ public class SaveLoadMenu : MonoBehaviour
             actionButtonLabel.text = "Load";
         }
         FillList();
-        // gameObject.SetActive(true);
         GetComponent<Canvas>().enabled = true;
         CameraController.Locked = true;
+        verticalScrollBar.value = 0.999f;
+        // gameObject.SetActive(true);
     }
 
     public void Close()
@@ -97,18 +100,22 @@ public class SaveLoadMenu : MonoBehaviour
 
     public void Save(string path)
     {
-        Debug.Log(Application.persistentDataPath);
-        // string path = Path.Combine(Application.persistentDataPath, "test.map");
+        Debug.Log("Saving in: " + Application.persistentDataPath);
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
         {
             writer.Write(0);
             hexGrid.Save(writer);
         }
+        sw.Stop();
+        Debug.Log(string.Format("Save map in: {0}ms", sw.ElapsedMilliseconds));
     }
 
     public IEnumerator Load(string path)
     {
-        // string path = Path.Combine(Application.persistentDataPath, "test.map");
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         if (!File.Exists(path))
         {
             Debug.LogError("File does not exist " + path);
@@ -118,13 +125,11 @@ public class SaveLoadMenu : MonoBehaviour
         {
             int header = reader.ReadInt32();
             if (header == 0)
-            {
                 yield return StartCoroutine(hexGrid.Load(reader));
-            }
             else
-            {
                 Debug.LogWarning("Unknown map format " + header);
-            }
         }
+        sw.Stop();
+        Debug.Log(string.Format("Load map in: {0}ms", sw.ElapsedMilliseconds));
     }
 }

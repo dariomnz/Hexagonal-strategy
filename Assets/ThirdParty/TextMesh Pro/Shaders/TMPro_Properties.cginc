@@ -83,3 +83,5 @@ uniform float		_ScaleX;
 uniform float		_ScaleY;
 uniform float		_PerspectiveFilter;
 uniform float		_Sharpness;
+
+// float _BendingAmount;

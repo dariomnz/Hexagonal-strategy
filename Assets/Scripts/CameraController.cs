@@ -58,7 +58,7 @@ public class CameraController : MonoBehaviour
         transform.position += Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized * Input.GetAxis("Horizontal") * speed * Time.deltaTime;
         transform.position += Vector3.up * Input.GetAxis("Vertical Movement") * speed * Time.deltaTime;
         transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * speed * 300 * Time.deltaTime;
-        hexGrid.CenterMap(transform.position.x, transform.position.z);
+        CenterMap();
         RenderSettings.skybox.SetFloat("_RotationY", -transform.position.x * 2);
         RenderSettings.skybox.SetFloat("_RotationZ", transform.position.z * 2);
 
@@ -71,5 +71,10 @@ public class CameraController : MonoBehaviour
             angle.x = Mathf.Clamp(angle.x, 0, 90);
             transform.eulerAngles = angle;
         }
+    }
+
+    public void CenterMap()
+    {
+        hexGrid.CenterMap(transform.position.x, transform.position.z);
     }
 }

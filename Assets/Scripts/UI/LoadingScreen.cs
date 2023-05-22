@@ -27,6 +27,7 @@ public class LoadingScreen : MonoBehaviour
     {
         loadingBar.value = 0;
         GetComponent<Canvas>().enabled = true;
+        CameraController.Locked = true;
     }
 
     public void UpdateLoading(float percentage)
@@ -37,5 +38,6 @@ public class LoadingScreen : MonoBehaviour
     public void Close()
     {
         GetComponent<Canvas>().enabled = false;
+        CameraController.Locked = false;
     }
 }
