@@ -49,6 +49,7 @@ public struct HexCoordinates
 
     public int DistanceTo(HexCoordinates other)
     {
+        // TODO: Fix distance when warp to top or button
         int xyz = (x < other.x ? other.x - x : x - other.x) +
                   (Y < other.Y ? other.Y - Y : Y - other.Y) +
                   (z < other.z ? other.z - z : z - other.z);

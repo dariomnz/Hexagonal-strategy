@@ -50,6 +50,11 @@ public class NewMapMenu : MonoBehaviour
         StartCoroutine(CreateMap(12 * HexMetrics.chunkSizeX, 12 * HexMetrics.chunkSizeZ));
     }
 
+    public void CreateExtraLargeMap()
+    {
+        StartCoroutine(CreateMap(20 * HexMetrics.chunkSizeX, 20 * HexMetrics.chunkSizeZ));
+    }
+
     public void ToggleMapGeneration(bool toggle)
     {
         generateMaps = toggle;

@@ -10,6 +10,22 @@ public class HexMapGenerator : MonoBehaviour
         public float clouds, moisture;
     }
 
+    struct Biome
+    {
+        public HexTerrains.HexType terrain;
+
+        public Biome(HexTerrains.HexType terrain)
+        {
+            this.terrain = terrain;
+        }
+    }
+    static Biome[] biomes = {
+        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow),
+        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock),
+        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand),
+        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand)
+    };
+
     public HexGrid grid;
     public bool useFixedSeed;
     public int seed;
@@ -46,6 +62,23 @@ public class HexMapGenerator : MonoBehaviour
     public HexDirection windDirection = HexDirection.NW;
     [Range(1f, 10f)]
     public float windStrength = 4f;
+    [Range(0f, 1f)]
+    public float lowTemperature = 0f;
+
+    [Range(0f, 1f)]
+    public float highTemperature = 1f;
+    public enum HemisphereMode
+    {
+        Both, North, South
+    }
+
+    public HemisphereMode hemisphere;
+    [Range(0f, 1f)]
+    public float temperatureJitter = 0.1f;
+
+    static float[] temperatureBands = { 0.1f, 0.3f, 0.6f };
+
+    static float[] moistureBands = { 0.12f, 0.28f, 0.85f };
 
     HexCellPriorityQueue searchFrontier;
     int searchFrontierPhase;
@@ -190,9 +223,11 @@ public class HexMapGenerator : MonoBehaviour
                 landBudget = SinkTerrain(chunkSize, landBudget);
             else
                 landBudget = RaiseTerrain(chunkSize, landBudget);
-
-            LoadingScreen.Instance.UpdateLoading((totalLandBudget - landBudget) / (float)totalLandBudget);
-            yield return null;
+            if ((landBudget / 20) != 0 && (landBudget % (landBudget / 20)) == 0)
+            {
+                LoadingScreen.Instance.UpdateLoading((totalLandBudget - landBudget) / (float)totalLandBudget);
+                yield return null;
+            }
         }
         LoadingScreen.Instance.Close();
     }
@@ -357,28 +392,21 @@ public class HexMapGenerator : MonoBehaviour
         for (int i = 0; i < grid.cellCount; i++)
         {
             HexCell cell = grid.GetCell(i);
+            float temperature = DetermineTemperature(cell);
             float moisture = climate[i].moisture;
             if (!cell.IsUnderwater)
-                if (moisture < 0.05f)
-                {
-                    cell.TerrainType = HexTerrains.HexType.Snow;
-                }
-                else if (moisture < 0.12f)
-                {
-                    cell.TerrainType = HexTerrains.HexType.Rock;
-                }
-                else if (moisture < 0.28f)
-                {
-                    cell.TerrainType = HexTerrains.HexType.Grass;
-                }
-                else if (moisture < 0.6f)
-                {
-                    cell.TerrainType = HexTerrains.HexType.Grass;
-                }
-                else
-                {
-                    cell.TerrainType = HexTerrains.HexType.Sand;
-                }
+            {
+                int t = 0;
+                for (; t < temperatureBands.Length; t++)
+                    if (temperature < temperatureBands[t])
+                        break;
+                int m = 0;
+                for (; m < moistureBands.Length; m++)
+                    if (moisture < moistureBands[m])
+                        break;
+                Biome cellBiome = biomes[t * 4 + m];
+                cell.TerrainType = cellBiome.terrain;
+            }
             else
             {
                 cell.TerrainType = HexTerrains.HexType.Water;
@@ -405,5 +433,29 @@ public class HexMapGenerator : MonoBehaviour
             }
         }
         return false;
+    }
+
+    float DetermineTemperature(HexCell cell)
+    {
+        float latitude = (float)cell.coordinates.Z / grid.cellCountZ;
+        if (hemisphere == HemisphereMode.Both)
+        {
+            latitude *= 2f;
+            if (latitude > 1f)
+            {
+                latitude = 2f - latitude;
+            }
+        }
+        else if (hemisphere == HemisphereMode.North)
+        {
+            latitude = 1f - latitude;
+        }
+
+        float temperature = Mathf.LerpUnclamped(lowTemperature, highTemperature, latitude);
+        temperature *= 1f - (cell.Elevation - waterLevel) / (elevationMaximum - waterLevel + 1f);
+        temperature += (Mathf.PerlinNoise(cell.transform.position.x * 0.1f, cell.transform.position.z * 0.1f) * 2f - 1f) * temperatureJitter;
+
+
+        return temperature;
     }
 }

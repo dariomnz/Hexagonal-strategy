@@ -124,11 +124,20 @@ public class HexGrid : MonoBehaviour
                 cell.transform.localPosition = GetPosition(cell.coordinates);
                 cell.Index = i;
                 AddCellToChunk(x, z, cell);
+
+                TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab);
+                label.rectTransform.SetParent(cell.chunk.gridCanvas.transform, false);
+                label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
+
+                cell.uiRect = label.rectTransform;
+                cell.UpdateLabel();
                 i++;
             }
-
-            LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 3));
-            yield return null;
+            if (z % (cellCountZ / 20) == 0)
+            {
+                LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 2));
+                yield return null;
+            }
         }
 
         for (int z = 0, i = 0; z < cellCountZ; z++)
@@ -181,26 +190,8 @@ public class HexGrid : MonoBehaviour
                 i++;
             }
 
-            LoadingScreen.Instance.UpdateLoading((i + cellCount) / ((float)cellCount * 3));
+            LoadingScreen.Instance.UpdateLoading((i + cellCount) / ((float)cellCount * 2));
             yield return null;
-        }
-
-        for (int i = 0; i < cells.Length; i++)
-        {
-            HexCell cell = cells[i];
-            TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab);
-            label.rectTransform.SetParent(cell.chunk.gridCanvas.transform, false);
-            label.rectTransform.anchoredPosition =
-                new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
-
-            cell.uiRect = label.rectTransform;
-            cell.UpdateLabel();
-
-            if (i % cellCountZ == 0)
-            {
-                LoadingScreen.Instance.UpdateLoading((i + cellCount * 2) / ((float)cellCount * 3));
-                yield return null;
-            }
         }
     }
 
