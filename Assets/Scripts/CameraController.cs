@@ -59,6 +59,8 @@ public class CameraController : MonoBehaviour
         transform.position += Vector3.up * Input.GetAxis("Vertical Movement") * speed * Time.deltaTime;
         transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * speed * 300 * Time.deltaTime;
         hexGrid.CenterMap(transform.position.x, transform.position.z);
+        RenderSettings.skybox.SetFloat("_RotationY", -transform.position.x * 2);
+        RenderSettings.skybox.SetFloat("_RotationZ", transform.position.z * 2);
 
         if (Input.GetMouseButton(1))
         {

@@ -161,7 +161,7 @@ MonoBehaviour:
         draggable: 1
         expandable: 1
         multipleSelection: 1
-        isExpanded: 0
+        isExpanded: 1
         label:
           m_Text: Keys
           m_Image: {fileID: 0}
@@ -176,11 +176,11 @@ MonoBehaviour:
         elementNameOverride: 
         elementIcon: {fileID: 0}
       reqReferences: {fileID: 0}
-      isExpanded: 0
+      isExpanded: 1
       _keyValues: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
       _keys: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
       _values:
-      - {fileID: 919132149155446097, guid: 7b54659bbc958974fa8d25d25a93c53f, type: 3}
+      - {fileID: 919132149155446097, guid: 847781f7e25b0d34db847df0a94a87fe, type: 3}
       - {fileID: 0}
       - {fileID: 0}
       - {fileID: 0}

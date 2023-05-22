@@ -197,6 +197,8 @@ public class HexCell : MonoBehaviour
         label.text = text;
     }
 
+    
+
     public void Save(BinaryWriter writer)
     {
         writer.Write((byte)terrainType);
