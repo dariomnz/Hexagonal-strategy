@@ -29,7 +29,7 @@ public class CameraController : MonoBehaviour
     public float speed = 10f;
     public int cameraDragSpeed = 300;
     public HexGrid hexGrid;
-
+    
     Vector3 angle;
 
     void Start()
@@ -59,8 +59,21 @@ public class CameraController : MonoBehaviour
         transform.position += Vector3.up * Input.GetAxis("Vertical Movement") * speed * Time.deltaTime;
         transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * speed * 300 * Time.deltaTime;
         CenterMap();
-        RenderSettings.skybox.SetFloat("_RotationY", -transform.position.x * 2);
-        RenderSettings.skybox.SetFloat("_RotationZ", transform.position.z * 2);
+
+        Quaternion rotatex = Quaternion.AngleAxis(transform.position.x * 2, Vector3.right);
+        Quaternion rotatez = Quaternion.AngleAxis(transform.position.z * 2, Vector3.forward);
+        Quaternion rotation = rotatex * rotatez;
+        
+        
+        // Quaternion skyrotation = Quaternion.Euler((transform.position.x * 2) % 360, 0, (transform.position.z * 2) % 360);
+        // skyrotation.Rotate(transform.position.x * 2, 0, transform.position.z * 2);
+        // Vector3 rotation = skyrotation.eulerAngles;
+        // Quaternion skyrotation = Quaternion.FromToRotation(Vector3.up, new Vector3((transform.position.x * 2) % 360, 0, (transform.position.z * 2) % 360));
+        // Vector3 rotation = skyrotation.eulerAngles;
+        RenderSettings.skybox.SetFloat("_RotationX", rotation.x);
+        RenderSettings.skybox.SetFloat("_RotationY", rotation.y);
+
+        RenderSettings.skybox.SetFloat("_RotationZ", rotation.z);
 
         if (Input.GetMouseButton(1))
         {

@@ -60,9 +60,6 @@ public class HexTerrains : ScriptableObject
     [SerializeField]
     public SerializableDictionaryBase<HexType, TerrainRoads> terrainMeshs;
 
-    public GameObject waterPrefab;
-    public GameObject waterBottomPrefab;
-
     public GameObject GetSimpleMesh(HexType type)
     {
         return terrainMeshs[type][HexRoadsConf.Zero];

@@ -123,7 +123,7 @@ public class HexCell : MonoBehaviour
         waterContainer.transform.parent = transform;
         GameObject newMeshGameObject = Instantiate(HexMetrics.Instance.hexTerrains.GetSimpleMesh(terrainWaterFloorType), transform.position, transform.rotation, waterContainer.transform);
         Vector3 pos = newMeshGameObject.transform.position;
-        pos.y -= waterDeep * HexMetrics.elevationStep;
+        pos.y -= (waterDeep + 1) * HexMetrics.elevationStep;
         newMeshGameObject.transform.position = pos;
         newMeshGameObject.transform.localScale = Vector3.one * 0.999f;
     }
