@@ -409,10 +409,17 @@ public class HexMapGenerator : MonoBehaviour
             }
             else
             {
-                cell.TerrainType = HexTerrains.HexType.Water;
+                HexTerrains.HexType terrain;
+                if (cell.Elevation == waterLevel - 1 || cell.Elevation == waterLevel - 2)
+                    terrain = HexTerrains.HexType.Sand;
+                else
+                    terrain = HexTerrains.HexType.Rock;
+                cell.waterDeep = waterLevel - cell.Elevation;
                 cell.Elevation = waterLevel;
+                cell.TerrainType = HexTerrains.HexType.Water;
+                cell.terrainWaterFloorType = terrain;
+                cell.UpdateMesh();
             }
-
         }
     }
 

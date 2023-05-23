@@ -78,8 +78,11 @@ public class HexCell : MonoBehaviour
     public HexCell NextWithSamePriority { get; set; }
     public int SearchPhase { get; set; }
     public int waterLevel { get; set; }
+    public int waterDeep { get; set; }
+    GameObject waterContainer;
+    public HexTerrains.HexType terrainWaterFloorType { get; set; }
 
-    public bool IsUnderwater => waterLevel > elevation;
+    public bool IsUnderwater => waterLevel > elevation || waterDeep > 0;
 
     public void Refresh() => enabled = true;
 
@@ -104,6 +107,25 @@ public class HexCell : MonoBehaviour
         // newMeshGameObject.isStatic = true;
         newMeshGameObject.transform.eulerAngles = Vector3.up * -60 * (rotations);
         meshFilter = newMeshGameObject.GetComponent<MeshFilter>();
+        if (terrainType == HexTerrains.HexType.Water)
+            Debug.Log(string.Format("IsUnderwater {0} waterDeep {1} elevation {2}", IsUnderwater, waterDeep, elevation));
+        if (IsUnderwater)
+            GenerateWater();
+    }
+
+    void GenerateWater()
+    {
+        Debug.Log("newMeshGameObject");
+        if (waterContainer)
+            DestroyImmediate(waterContainer);
+
+        waterContainer = new GameObject("waterContainer");
+        waterContainer.transform.parent = transform;
+        GameObject newMeshGameObject = Instantiate(HexMetrics.Instance.hexTerrains.GetSimpleMesh(terrainWaterFloorType), transform.position, transform.rotation, waterContainer.transform);
+        Vector3 pos = newMeshGameObject.transform.position;
+        pos.y -= waterDeep * HexMetrics.elevationStep;
+        newMeshGameObject.transform.position = pos;
+        newMeshGameObject.transform.localScale = Vector3.one * 0.999f;
     }
 
     public HexCell GetNeighbor(HexDirection direction)
@@ -190,8 +212,6 @@ public class HexCell : MonoBehaviour
         TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
         label.text = text;
     }
-
-
 
     public void Save(BinaryWriter writer)
     {

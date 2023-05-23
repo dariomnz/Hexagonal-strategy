@@ -233,3 +233,5 @@ MonoBehaviour:
       - {fileID: 0}
       - {fileID: 0}
       - {fileID: 0}
+  waterPrefab: {fileID: 919132149155446097, guid: 7b54659bbc958974fa8d25d25a93c53f, type: 3}
+  waterBottomPrefab: {fileID: 919132149155446097, guid: 847781f7e25b0d34db847df0a94a87fe, type: 3}
