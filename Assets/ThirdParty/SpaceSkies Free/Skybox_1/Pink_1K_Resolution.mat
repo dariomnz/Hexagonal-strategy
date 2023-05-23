@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Pink_1K_Resolution
   m_Shader: {fileID: 4800000, guid: f487f484fb9fbd249a2b43cdd31b12ac, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
   - _EMISSION
@@ -18,6 +20,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -96,9 +99,9 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Rotation: 0
-    - _RotationX: 0.47133029
-    - _RotationY: -0.18636021
-    - _RotationZ: 0.31696758
+    - _RotationX: 0.5574412
+    - _RotationY: -0.49145058
+    - _RotationZ: 0.44250402
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
