@@ -29,7 +29,8 @@ public class CameraController : MonoBehaviour
     public float speed = 10f;
     public int cameraDragSpeed = 300;
     public HexGrid hexGrid;
-    
+    public bool IsCentringMap = true;
+
     Vector3 angle;
 
     void Start()
@@ -58,13 +59,14 @@ public class CameraController : MonoBehaviour
         transform.position += Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized * Input.GetAxis("Horizontal") * speed * Time.deltaTime;
         transform.position += Vector3.up * Input.GetAxis("Vertical Movement") * speed * Time.deltaTime;
         transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * speed * 300 * Time.deltaTime;
-        CenterMap();
+        if (IsCentringMap)
+            CenterMap();
 
         Quaternion rotatex = Quaternion.AngleAxis(transform.position.x * 2, Vector3.right);
         Quaternion rotatez = Quaternion.AngleAxis(transform.position.z * 2, Vector3.forward);
         Quaternion rotation = rotatex * rotatez;
-        
-        
+
+
         // Quaternion skyrotation = Quaternion.Euler((transform.position.x * 2) % 360, 0, (transform.position.z * 2) % 360);
         // skyrotation.Rotate(transform.position.x * 2, 0, transform.position.z * 2);
         // Vector3 rotation = skyrotation.eulerAngles;

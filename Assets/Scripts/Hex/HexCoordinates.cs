@@ -8,9 +8,9 @@ public struct HexCoordinates
     [SerializeField]
     private int x, z;
 
-    public int X { get { return x; } }
-    public int Y { get { return -X - Z; } }
-    public int Z { get { return z; } }
+    public int X { get { return x; } set { x = value; } }
+    public int Y { get { return -X - Z; } set { z = -X - value; } }
+    public int Z { get { return z; } set { z = value; } }
 
     public HexCoordinates(int x, int z)
     {
@@ -49,80 +49,56 @@ public struct HexCoordinates
 
     public int DistanceTo(HexCoordinates other)
     {
-        // TODO: Fix distance when warp to top or button
-        int xyz = (x < other.x ? other.x - x : x - other.x) +
-                  (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                  (z < other.z ? other.z - z : z - other.z);
+        HexCoordinates auxCoor = new HexCoordinates(other.X, other.Z);
+        
+        int xyz = Mathf.Abs(auxCoor.X - X) +
+                  Mathf.Abs(auxCoor.Y - Y) +
+                  Mathf.Abs(auxCoor.Z - Z);
 
-        other.x += HexMetrics.cellSizeX;
-        // other.z += HexMetrics.cellSizeZ;
+        auxCoor.X += HexMetrics.cellSizeX;
 
-        int xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                         (z < other.z ? other.z - z : z - other.z);
+        int xyzWrapped = Mathf.Abs(auxCoor.X - X) +
+                         Mathf.Abs(auxCoor.Y - Y) +
+                         Mathf.Abs(auxCoor.Z - Z);
         if (xyzWrapped < xyz)
         {
             xyz = xyzWrapped;
         }
         else
         {
-            other.x -= 2 * HexMetrics.cellSizeX;
-            // other.z -= 2 * HexMetrics.cellSizeZ;
-            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                         (z < other.z ? other.z - z : z - other.z);
+            auxCoor.X -= 2 * HexMetrics.cellSizeX;
+            xyzWrapped = Mathf.Abs(auxCoor.X - X) +
+                         Mathf.Abs(auxCoor.Y - Y) +
+                         Mathf.Abs(auxCoor.Z - Z);
             if (xyzWrapped < xyz)
             {
                 xyz = xyzWrapped;
             }
         }
 
-        // other.x += HexMetrics.cellSizeX;
-        other.z += HexMetrics.cellSizeZ;
+        auxCoor = new HexCoordinates(other.X, other.Z);
+        auxCoor.X -= HexMetrics.cellSizeX / 2;
+        auxCoor.Z += HexMetrics.cellSizeZ;
 
-        xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                     (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                     (z < other.z ? other.z - z : z - other.z);
+        xyzWrapped = Mathf.Abs(auxCoor.X - X) +
+                         Mathf.Abs(auxCoor.Y - Y) +
+                         Mathf.Abs(auxCoor.Z - Z);
         if (xyzWrapped < xyz)
         {
             xyz = xyzWrapped;
         }
         else
         {
-            // other.x -= 2 * HexMetrics.cellSizeX;
-            other.z -= 2 * HexMetrics.cellSizeZ;
-            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                         (z < other.z ? other.z - z : z - other.z);
+            auxCoor.X += 2 * HexMetrics.cellSizeX / 2;
+            auxCoor.Z -= 2 * HexMetrics.cellSizeZ;
+            xyzWrapped = Mathf.Abs(auxCoor.X - X) +
+                         Mathf.Abs(auxCoor.Y - Y) +
+                         Mathf.Abs(auxCoor.Z - Z);
             if (xyzWrapped < xyz)
             {
                 xyz = xyzWrapped;
             }
         }
-
-        other.x += HexMetrics.cellSizeX;
-        other.z += HexMetrics.cellSizeZ;
-
-        xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                     (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                     (z < other.z ? other.z - z : z - other.z);
-        if (xyzWrapped < xyz)
-        {
-            xyz = xyzWrapped;
-        }
-        else
-        {
-            other.x -= 2 * HexMetrics.cellSizeX;
-            other.z -= 2 * HexMetrics.cellSizeZ;
-            xyzWrapped = (x < other.x ? other.x - x : x - other.x) +
-                         (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                         (z < other.z ? other.z - z : z - other.z);
-            if (xyzWrapped < xyz)
-            {
-                xyz = xyzWrapped;
-            }
-        }
-
         return xyz / 2;
     }
 
