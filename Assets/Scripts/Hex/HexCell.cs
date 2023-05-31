@@ -107,15 +107,12 @@ public class HexCell : MonoBehaviour
         // newMeshGameObject.isStatic = true;
         newMeshGameObject.transform.eulerAngles = Vector3.up * -60 * (rotations);
         meshFilter = newMeshGameObject.GetComponent<MeshFilter>();
-        if (terrainType == HexTerrains.HexType.Water)
-            Debug.Log(string.Format("IsUnderwater {0} waterDeep {1} elevation {2}", IsUnderwater, waterDeep, elevation));
         if (IsUnderwater)
             GenerateWater();
     }
 
     void GenerateWater()
     {
-        Debug.Log("newMeshGameObject");
         if (waterContainer)
             DestroyImmediate(waterContainer);
 

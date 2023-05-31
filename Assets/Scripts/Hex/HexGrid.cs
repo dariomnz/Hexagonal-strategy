@@ -32,7 +32,7 @@ public class HexGrid : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(CreateMap(cellCountX, cellCountZ));
+        StartCoroutine(GetComponent<HexMapGenerator>().GenerateMap(8 * HexMetrics.chunkSizeX, 8 * HexMetrics.chunkSizeZ));
     }
 
     public Vector3 GetPosition(HexCoordinates coordinates)
@@ -70,7 +70,7 @@ public class HexGrid : MonoBehaviour
         cellCountZ = _cellCountZ;
         HexMetrics.cellSizeX = cellCountX;
         HexMetrics.cellSizeZ = cellCountZ;
-        CameraController.Instance.ValidatePosition();
+        CameraController.Instance?.ValidatePosition();
 
         chunkCountX = cellCountX / HexMetrics.chunkSizeX;
         chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
