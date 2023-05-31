@@ -109,7 +109,8 @@ public class SaveLoadMenu : MonoBehaviour
             hexGrid.Save(writer);
         }
         sw.Stop();
-        Debug.Log(string.Format("Save map in: {0}ms", sw.ElapsedMilliseconds));
+        FileInfo fileInfo = new System.IO.FileInfo(path);
+        Debug.Log(string.Format("Save map in: {0} ms\nFile size: {1} bytes", sw.ElapsedMilliseconds, fileInfo.Length));
     }
 
     public IEnumerator Load(string path)

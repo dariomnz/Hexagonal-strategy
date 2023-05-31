@@ -70,7 +70,8 @@ public class HexCell : MonoBehaviour
     [SerializeField]
     bool[] roads;
     MeshCollider meshCollider;
-    MeshFilter meshFilter;
+    public MeshFilter meshFilter;
+    public MeshRenderer meshRenderer;
     public HexGridChunk chunk { get; set; }
     public int Index { get; set; }
     public RectTransform uiRect { get; set; }
@@ -94,31 +95,38 @@ public class HexCell : MonoBehaviour
 
     public void UpdateMesh()
     {
-        ChangeMesh(HexMetrics.Instance.hexTerrains.GetMesh(terrainType, roads, out int rotations), rotations);
-    }
-
-    void ChangeMesh(GameObject newTilePrefab, int rotations)
-    {
-        if (newTilePrefab == null)
-            return;
-        if (meshFilter)
-            DestroyImmediate(meshFilter.gameObject);
-        GameObject newMeshGameObject = Instantiate(newTilePrefab, transform.position, transform.rotation, transform);
-        // newMeshGameObject.isStatic = true;
-        newMeshGameObject.transform.eulerAngles = Vector3.up * -60 * (rotations);
-        meshFilter = newMeshGameObject.GetComponent<MeshFilter>();
+        int rotations = 0;
+        if (terrainType == HexTerrains.HexType.Water)
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.waterTop;
+        else
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetMesh(roads, out rotations);
+        meshRenderer.materials = HexMetrics.Instance.hexTerrains.GetMaterials(terrainType, HasRoads());
+        meshFilter.transform.eulerAngles = Vector3.up * -60 * (rotations);
         if (IsUnderwater)
             GenerateWater();
+        else
+            ClearWaterFloor();
+    }
+
+    void ClearWaterFloor()
+    {
+        if (waterContainer)
+            DestroyImmediate(waterContainer);
     }
 
     void GenerateWater()
     {
-        if (waterContainer)
-            DestroyImmediate(waterContainer);
-
+        ClearWaterFloor();
         waterContainer = new GameObject("waterContainer");
-        waterContainer.transform.parent = transform;
-        GameObject newMeshGameObject = Instantiate(HexMetrics.Instance.hexTerrains.GetSimpleMesh(terrainWaterFloorType), transform.position, transform.rotation, waterContainer.transform);
+        waterContainer.transform.SetParent(transform, false);
+        GameObject newMeshGameObject = new GameObject("waterFloor", new Type[] { typeof(MeshFilter), typeof(MeshRenderer) });
+        newMeshGameObject.transform.SetParent(waterContainer.transform, false);
+        MeshFilter floorMeshFilter = newMeshGameObject.GetComponent<MeshFilter>();
+        MeshRenderer floorMeshRenderer = newMeshGameObject.GetComponent<MeshRenderer>();
+
+        floorMeshFilter.mesh = HexMetrics.Instance.hexTerrains.GetSimpleMesh();
+        floorMeshRenderer.materials = HexMetrics.Instance.hexTerrains.GetMaterials(terrainWaterFloorType);
+
         Vector3 pos = newMeshGameObject.transform.position;
         pos.y -= (waterDeep + 1) * HexMetrics.elevationStep;
         newMeshGameObject.transform.position = pos;
@@ -141,9 +149,20 @@ public class HexCell : MonoBehaviour
         int difference = elevation - GetNeighbor(direction).elevation;
         return difference >= 0 ? difference : -difference;
     }
+
     public bool HasRoadThroughEdge(HexDirection direction)
     {
         return roads[(int)direction];
+    }
+
+    public bool HasRoads()
+    {
+        foreach (var road in roads)
+        {
+            if (road)
+                return true;
+        }
+        return false;
     }
 
     public void AddRoad(HexDirection direction)
@@ -214,6 +233,11 @@ public class HexCell : MonoBehaviour
     {
         writer.Write((byte)terrainType);
         writer.Write((byte)(elevation + 127));
+        if (terrainType == HexTerrains.HexType.Water)
+        {
+            writer.Write((byte)waterDeep);
+            writer.Write((byte)terrainWaterFloorType);
+        }
         writer.Write((byte)featureManager.currentFeature);
         int roadFlags = 0;
         for (int i = 0; i < roads.Length; i++)
@@ -226,6 +250,11 @@ public class HexCell : MonoBehaviour
     {
         terrainType = (HexTerrains.HexType)reader.ReadByte();
         Elevation = reader.ReadByte() - 127;
+        if (terrainType == HexTerrains.HexType.Water)
+        {
+            waterDeep = reader.ReadByte();
+            terrainWaterFloorType = (HexTerrains.HexType)reader.ReadByte();
+        }
         featureManager.AddFeature(this, (HexFeatureManager.Features)reader.ReadByte());
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)
