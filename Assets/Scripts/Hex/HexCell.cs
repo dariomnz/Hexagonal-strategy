@@ -40,6 +40,15 @@ public class HexCell : MonoBehaviour
             Vector3 uiPosition = uiRect.localPosition;
             uiPosition.z = elevation * -HexMetrics.elevationStep - 1.05f;
             uiRect.localPosition = uiPosition;
+
+            if (hasOutgoingRiver &&
+                elevation < GetNeighbor(outgoingRiver).elevation)
+                RemoveOutgoingRiver();
+            if (hasIncomingRiver &&
+                elevation > GetNeighbor(incomingRiver).elevation)
+                RemoveIncomingRiver();
+
+            Refresh();
         }
     }
 
@@ -67,6 +76,10 @@ public class HexCell : MonoBehaviour
     public HexCoordinates coordinates;
     public HexFeatureManager featureManager;
     public HexCell[] neighbors;
+    bool hasIncomingRiver { get; set; }
+    bool hasOutgoingRiver { get; set; }
+    HexDirection incomingRiver { get; set; }
+    HexDirection outgoingRiver { get; set; }
     [SerializeField]
     bool[] roads;
     MeshCollider meshCollider;
@@ -98,9 +111,19 @@ public class HexCell : MonoBehaviour
         int rotations = 0;
         if (terrainType == HexTerrains.HexType.Water)
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.waterTop;
-        else
+        else if (HasRoads())
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetMesh(roads, out rotations);
-        meshRenderer.materials = HexMetrics.Instance.hexTerrains.GetMaterials(terrainType, HasRoads());
+        else if (HasRiver())
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetMesh(GetRivers(), out rotations);
+        else
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetSimpleMesh();
+
+        meshRenderer.materials = HexMetrics.Instance.hexTerrains.GetMaterials(terrainType, HasRoads(), HasRiver());
+        if (hasIncomingRiver)
+            meshRenderer.materials[1].SetFloat("_Rotation", (int)incomingRiver.Opposite() * -60);
+        if (hasOutgoingRiver)
+            meshRenderer.materials[1].SetFloat("_Rotation", (int)outgoingRiver * -60);
+
         meshFilter.transform.eulerAngles = Vector3.up * -60 * (rotations);
         if (IsUnderwater)
             GenerateWater();
@@ -148,6 +171,77 @@ public class HexCell : MonoBehaviour
     {
         int difference = elevation - GetNeighbor(direction).elevation;
         return difference >= 0 ? difference : -difference;
+    }
+
+    public bool HasRiver() { return hasIncomingRiver || hasOutgoingRiver; }
+    public bool HasRiverBeginOrEnd { get { return hasIncomingRiver != hasOutgoingRiver; } }
+    public bool HasRiverThroughEdge(HexDirection direction)
+    {
+        return
+            hasIncomingRiver && incomingRiver == direction ||
+            hasOutgoingRiver && outgoingRiver == direction;
+    }
+
+    public bool[] GetRivers()
+    {
+        bool[] outValue = new bool[] { false, false, false, false, false, false };
+        foreach (HexDirection i in Enum.GetValues(typeof(HexDirection)))
+            if (HasRiverThroughEdge(i))
+                outValue[(int)i] = true;
+        return outValue;
+    }
+
+    public void SetOutgoingRiver(HexDirection direction)
+    {
+        if (hasOutgoingRiver && outgoingRiver == direction)
+            return;
+        HexCell neighbor = GetNeighbor(direction);
+        if (!neighbor || elevation < neighbor.elevation)
+            return;
+        RemoveOutgoingRiver();
+        if (hasIncomingRiver && incomingRiver == direction)
+            RemoveIncomingRiver();
+        hasOutgoingRiver = true;
+        outgoingRiver = direction;
+        Refresh();
+        neighbor.RemoveIncomingRiver();
+        neighbor.hasIncomingRiver = true;
+        neighbor.incomingRiver = direction.Opposite();
+        neighbor.Refresh();
+    }
+
+    public void RemoveOutgoingRiver()
+    {
+        if (!hasOutgoingRiver)
+        {
+            return;
+        }
+        hasOutgoingRiver = false;
+        Refresh();
+
+        HexCell neighbor = GetNeighbor(outgoingRiver);
+        neighbor.hasIncomingRiver = false;
+        neighbor.Refresh();
+    }
+
+    public void RemoveIncomingRiver()
+    {
+        if (!hasIncomingRiver)
+        {
+            return;
+        }
+        hasIncomingRiver = false;
+        Refresh();
+
+        HexCell neighbor = GetNeighbor(incomingRiver);
+        neighbor.hasOutgoingRiver = false;
+        neighbor.Refresh();
+    }
+
+    public void RemoveRiver()
+    {
+        RemoveOutgoingRiver();
+        RemoveIncomingRiver();
     }
 
     public bool HasRoadThroughEdge(HexDirection direction)

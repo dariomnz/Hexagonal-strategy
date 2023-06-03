@@ -24,6 +24,7 @@ public class HexTerrains : ScriptableObject
         Rock = HexType.Rock,
         Snow = HexType.Snow,
         Road,
+        River,
     };
 
     public enum HexRoadsConf
@@ -79,24 +80,25 @@ public class HexTerrains : ScriptableObject
     //     return terrainMeshs[type][HexRoadsConf.Zero];
     // }
 
-    public Material[] GetMaterials(HexType type, bool hasRoads = false)
+    public Material[] GetMaterials(HexType type, bool hasRoads = false, bool hasRivers = false)
     {
-        int outSize = hasRoads ? 2 : 1;
+        int outSize = type != HexType.Water && (hasRoads || hasRivers) ? 2 : 1;
         Material[] outMaterials = new Material[outSize];
-        if (hasRoads)
+        outMaterials[0] = terrainMaterials[(HexMaterial)type];
+        if (type != HexType.Water)
         {
-            outMaterials[0] = terrainMaterials[(HexMaterial)type];
-            outMaterials[1] = terrainMaterials[HexMaterial.Road];
+            if (hasRivers)
+                outMaterials[1] = terrainMaterials[HexMaterial.River];
+            if (hasRoads)
+                outMaterials[1] = terrainMaterials[HexMaterial.Road];
         }
-        else
-            outMaterials[0] = terrainMaterials[(HexMaterial)type];
         return outMaterials;
     }
 
     public Mesh GetSimpleMesh()
-    {   
-        bool[] roads = new bool[]{false,false,false,false,false,false};
-        return GetMesh(roads,out int rotations);
+    {
+        bool[] roads = new bool[] { false, false, false, false, false, false };
+        return GetMesh(roads, out int rotations);
     }
 
     public Mesh GetMesh(bool[] roads, out int rotations)

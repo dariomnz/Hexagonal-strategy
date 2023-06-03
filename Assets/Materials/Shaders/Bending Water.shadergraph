@@ -2274,7 +2274,7 @@
         },
         "preventRotation": false
     },
-    "m_Path": "NotSlot",
+    "m_Path": "Shader Graphs",
     "m_GraphPrecision": 0,
     "m_PreviewMode": 2,
     "m_OutputNode": {
@@ -3182,10 +3182,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -2824.0,
-            "y": -1789.000244140625,
-            "width": 211.0,
-            "height": 94.0001220703125
+            "x": -2797.333251953125,
+            "y": -1872.0001220703125,
+            "width": 212.66650390625,
+            "height": 96.0001220703125
         }
     },
     "m_Slots": [
@@ -4813,10 +4813,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -2997.0,
-            "y": -1759.0001220703125,
-            "width": 152.0,
-            "height": 34.0
+            "x": -2970.0,
+            "y": -1842.0001220703125,
+            "width": 152.666748046875,
+            "height": 36.0
         }
     },
     "m_Slots": [
@@ -14216,8 +14216,8 @@
     "m_ObjectId": "e7c3f0cc4a004de8b3aa98a181597192",
     "m_Title": "Bending",
     "m_Position": {
-        "x": -3022.0,
-        "y": -1848.000244140625
+        "x": -2995.333251953125,
+        "y": -1930.6668701171875
     }
 }
 
