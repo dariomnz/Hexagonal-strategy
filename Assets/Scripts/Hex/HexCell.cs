@@ -76,10 +76,10 @@ public class HexCell : MonoBehaviour
     public HexCoordinates coordinates;
     public HexFeatureManager featureManager;
     public HexCell[] neighbors;
-    bool hasIncomingRiver { get; set; }
-    bool hasOutgoingRiver { get; set; }
-    HexDirection incomingRiver { get; set; }
-    HexDirection outgoingRiver { get; set; }
+    public bool hasIncomingRiver { get; set; }
+    public bool hasOutgoingRiver { get; set; }
+    public HexDirection incomingRiver { get; set; }
+    public HexDirection outgoingRiver { get; set; }
     [SerializeField]
     bool[] roads;
     MeshCollider meshCollider;
@@ -93,6 +93,7 @@ public class HexCell : MonoBehaviour
     public int SearchPhase { get; set; }
     public int waterLevel { get; set; }
     public int waterDeep { get; set; }
+    public bool isLake { get; set; } = false;
     GameObject waterContainer;
     public HexTerrains.HexType terrainWaterFloorType { get; set; }
 
@@ -332,6 +333,17 @@ public class HexCell : MonoBehaviour
             writer.Write((byte)waterDeep);
             writer.Write((byte)terrainWaterFloorType);
         }
+
+        if (hasIncomingRiver)
+            writer.Write((byte)(incomingRiver + 128));
+        else
+            writer.Write((byte)0);
+
+        if (hasOutgoingRiver)
+            writer.Write((byte)(outgoingRiver + 128));
+        else
+            writer.Write((byte)0);
+
         writer.Write((byte)featureManager.currentFeature);
         int roadFlags = 0;
         for (int i = 0; i < roads.Length; i++)
@@ -349,6 +361,25 @@ public class HexCell : MonoBehaviour
             waterDeep = reader.ReadByte();
             terrainWaterFloorType = (HexTerrains.HexType)reader.ReadByte();
         }
+
+        byte riverData = reader.ReadByte();
+        if (riverData >= 128)
+        {
+            hasIncomingRiver = true;
+            incomingRiver = (HexDirection)(riverData - 128);
+        }
+        else
+            hasIncomingRiver = false;
+
+        riverData = reader.ReadByte();
+        if (riverData >= 128)
+        {
+            hasOutgoingRiver = true;
+            outgoingRiver = (HexDirection)(riverData - 128);
+        }
+        else
+            hasOutgoingRiver = false;
+
         featureManager.AddFeature(this, (HexFeatureManager.Features)reader.ReadByte());
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)

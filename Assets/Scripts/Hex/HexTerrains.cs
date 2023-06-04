@@ -132,7 +132,6 @@ public class HexTerrains : ScriptableObject
             riversString = ultimoCaracter + riversString.Substring(0, riversString.Length - 1);
         }
 
-        Debug.Log(riversString);
         if (rotations == -1)
         {
             Debug.LogError(string.Format("Not registed roadConfiguration: {0}", riversString.ToString()));
@@ -146,7 +145,6 @@ public class HexTerrains : ScriptableObject
             Debug.LogError(string.Format("Not registed terrainRoadPrefab: {0}", conf.ToString()));
             return null;
         }
-        Debug.Log(terrainRiversMeshs[conf]);
         return terrainRiversMeshs[conf];
     }
 
