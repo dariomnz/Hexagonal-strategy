@@ -107,7 +107,7 @@ public class HexTerrains : ScriptableObject
         {
             if (hasRivers)
                 outMaterials[1] = terrainMaterials[HexMaterial.River];
-            if (hasRoads)
+            else if (hasRoads)
                 outMaterials[1] = terrainMaterials[HexMaterial.Road];
         }
         return outMaterials;

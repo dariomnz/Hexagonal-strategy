@@ -9,6 +9,7 @@ public class HexFeatureManager : MonoBehaviour
         House,
         Castle,
         Forest,
+        Bridge,
     }
 
     [SerializeField]

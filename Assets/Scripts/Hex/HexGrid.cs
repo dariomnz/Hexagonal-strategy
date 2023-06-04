@@ -346,6 +346,8 @@ public class HexGrid : MonoBehaviour
                     continue;
                 if (neighbor.TerrainType == HexTerrains.HexType.Water)
                     continue;
+                if (neighbor.HasRiver())
+                    continue;
                 int distance = current.Distance;
                 if (current.HasRoadThroughEdge(d))
                     distance += 1;

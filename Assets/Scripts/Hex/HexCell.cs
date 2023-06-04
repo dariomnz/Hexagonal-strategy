@@ -112,10 +112,10 @@ public class HexCell : MonoBehaviour
         int rotations = 0;
         if (terrainType == HexTerrains.HexType.Water)
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.waterTop;
-        else if (HasRoads())
-            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetRoadMesh(roads, out rotations);
         else if (HasRiver())
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetRiverMesh(GetRivers(), out rotations);
+        else if (HasRoads())
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetRoadMesh(roads, out rotations);
         else
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetSimpleMesh();
 
