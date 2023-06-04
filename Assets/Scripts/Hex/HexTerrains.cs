@@ -45,6 +45,7 @@ public class HexTerrains : ScriptableObject
         Thirteen = 13,
     };
 
+    // 0 no road, 1 road
     public static readonly Dictionary<string, HexRoadsConf> RoadConfiguration
     = new Dictionary<string, HexRoadsConf>{
 
@@ -64,6 +65,22 @@ public class HexTerrains : ScriptableObject
         {"111111", HexRoadsConf.Thirteen},
     };
 
+    // 0 No river, 1 incoming river, 2 outgoing river
+    public static readonly Dictionary<string, HexRoadsConf> RiverConfiguration
+    = new Dictionary<string, HexRoadsConf>{
+
+        {"000000", HexRoadsConf.Zero},
+        {"000010", HexRoadsConf.One},
+        {"000021", HexRoadsConf.Two},
+        {"200010", HexRoadsConf.Three},
+        {"020010", HexRoadsConf.Four},
+
+        {"000020", HexRoadsConf.Five},
+        {"000012", HexRoadsConf.Six},
+        {"100020", HexRoadsConf.Seven},
+        {"010020", HexRoadsConf.Eight},
+    };
+
 
     // [System.Serializable]
     // public class TerrainRoads : SerializableDictionaryBase<HexRoadsConf, GameObject> { }
@@ -73,6 +90,7 @@ public class HexTerrains : ScriptableObject
 
     public SerializableDictionaryBase<HexMaterial, Material> terrainMaterials;
     public SerializableDictionaryBase<HexRoadsConf, Mesh> terrainRoadsMeshs;
+    public SerializableDictionaryBase<HexRoadsConf, Mesh> terrainRiversMeshs;
     public Mesh waterTop;
 
     // public GameObject GetSimpleMesh(HexType type)
@@ -97,11 +115,42 @@ public class HexTerrains : ScriptableObject
 
     public Mesh GetSimpleMesh()
     {
-        bool[] roads = new bool[] { false, false, false, false, false, false };
-        return GetMesh(roads, out int rotations);
+        return terrainRoadsMeshs[HexRoadsConf.Zero];
     }
 
-    public Mesh GetMesh(bool[] roads, out int rotations)
+    public Mesh GetRiverMesh(string riversString, out int rotations)
+    {
+        rotations = -1;
+        for (int i = 0; i < 6; i++)
+        {
+            if (RiverConfiguration.ContainsKey(riversString))
+            {
+                rotations = i;
+                break;
+            }
+            char ultimoCaracter = riversString[riversString.Length - 1];  // Guarda el último carácter
+            riversString = ultimoCaracter + riversString.Substring(0, riversString.Length - 1);
+        }
+
+        Debug.Log(riversString);
+        if (rotations == -1)
+        {
+            Debug.LogError(string.Format("Not registed roadConfiguration: {0}", riversString.ToString()));
+            return null;
+        }
+
+        HexRoadsConf conf = RiverConfiguration[riversString];
+
+        if (!terrainRiversMeshs.ContainsKey(conf))
+        {
+            Debug.LogError(string.Format("Not registed terrainRoadPrefab: {0}", conf.ToString()));
+            return null;
+        }
+        Debug.Log(terrainRiversMeshs[conf]);
+        return terrainRiversMeshs[conf];
+    }
+
+    public Mesh GetRoadMesh(bool[] roads, out int rotations)
     {
         rotations = -1;
         string roadsString = "";

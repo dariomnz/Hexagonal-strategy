@@ -112,17 +112,13 @@ public class HexCell : MonoBehaviour
         if (terrainType == HexTerrains.HexType.Water)
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.waterTop;
         else if (HasRoads())
-            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetMesh(roads, out rotations);
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetRoadMesh(roads, out rotations);
         else if (HasRiver())
-            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetMesh(GetRivers(), out rotations);
+            meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetRiverMesh(GetRivers(), out rotations);
         else
             meshFilter.mesh = HexMetrics.Instance.hexTerrains.GetSimpleMesh();
 
         meshRenderer.materials = HexMetrics.Instance.hexTerrains.GetMaterials(terrainType, HasRoads(), HasRiver());
-        if (hasIncomingRiver)
-            meshRenderer.materials[1].SetFloat("_Rotation", (int)incomingRiver.Opposite() * -60);
-        if (hasOutgoingRiver)
-            meshRenderer.materials[1].SetFloat("_Rotation", (int)outgoingRiver * -60);
 
         meshFilter.transform.eulerAngles = Vector3.up * -60 * (rotations);
         if (IsUnderwater)
@@ -182,12 +178,16 @@ public class HexCell : MonoBehaviour
             hasOutgoingRiver && outgoingRiver == direction;
     }
 
-    public bool[] GetRivers()
+    public string GetRivers()
     {
-        bool[] outValue = new bool[] { false, false, false, false, false, false };
+        string outValue = "";
         foreach (HexDirection i in Enum.GetValues(typeof(HexDirection)))
-            if (HasRiverThroughEdge(i))
-                outValue[(int)i] = true;
+            if (hasIncomingRiver && incomingRiver == i)
+                outValue += "1";
+            else if (hasOutgoingRiver && outgoingRiver == i)
+                outValue += "2";
+            else
+                outValue += "0";
         return outValue;
     }
 
