@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System.Collections;
+using UnityEditor;
 
 public class HexGrid : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class HexGrid : MonoBehaviour
     void Start()
     {
         StartCoroutine(GetComponent<HexMapGenerator>().GenerateMap(8 * HexMetrics.chunkSizeX, 8 * HexMetrics.chunkSizeZ));
+        // StartCoroutine(GetComponent<HexMapGenerator>().GenerateMap(20 * HexMetrics.chunkSizeX, 20 * HexMetrics.chunkSizeZ));
     }
 
     public Vector3 GetPosition(HexCoordinates coordinates)
@@ -78,8 +80,12 @@ public class HexGrid : MonoBehaviour
         DeleteMap();
 
         CreateChunks();
-        yield return StartCoroutine(CreateCells());
 
+        // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        // sw.Start();
+        yield return StartCoroutine(CreateCells());
+        // sw.Stop();
+        // Debug.Log(string.Format("CreateCells in: {0}ms", sw.ElapsedMilliseconds));
         LoadingScreen.Instance.Close();
     }
 
@@ -91,7 +97,8 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < chunkCountX; x++)
             {
-                HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab, map.transform);
+                // HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab, map.transform);
+                HexGridChunk chunk = chunks[i++] = PrefabUtility.InstantiatePrefab(chunkPrefab, map.transform) as HexGridChunk;
                 chunk.hexGrid = this;
 
                 Vector3 newPosition = Vector3.zero;
@@ -126,7 +133,8 @@ public class HexGrid : MonoBehaviour
                 int chunkZ = z / HexMetrics.chunkSizeZ;
                 Vector3 newPosition = GetPosition(coordinates);
                 HexGridChunk chunk = GetChunk(chunkX, chunkZ);
-                HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, chunk.transform);
+                // HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, chunk.transform);
+                HexCell cell = cells[i] = PrefabUtility.InstantiatePrefab(cellPrefab, chunk.transform) as HexCell;
                 cell.coordinates = coordinates;
                 newPosition.x -= HexMetrics.chunkSizeX * HexMetrics.xDiameter * chunkX;
                 newPosition.z -= HexMetrics.chunkSizeZ * HexMetrics.zDiameter * chunkZ;
@@ -145,7 +153,8 @@ public class HexGrid : MonoBehaviour
                 // cell.Index = i;
                 // AddCellToChunk(x, z, cell);
 
-                TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
+                // TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
+                TextMeshProUGUI label = PrefabUtility.InstantiatePrefab(cellLabelPrefab, cell.chunk.gridCanvas.transform) as TextMeshProUGUI;
                 label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
                 cell.uiRect = label.rectTransform;
                 cell.UpdateLabel();
@@ -213,6 +222,21 @@ public class HexGrid : MonoBehaviour
                 yield return null;
             }
         }
+        // if (!Directory.Exists("Assets/Prefabs/Pregenerated Maps"))
+        //     AssetDatabase.CreateFolder("Assets/Prefabs", "Pregenerated Maps");
+        // string localPath = "Assets/Prefabs/Pregenerated Maps/" + map.name + ".prefab";
+
+        // // Make sure the file name is unique, in case an existing Prefab has the same name.
+        // localPath = AssetDatabase.GenerateUniqueAssetPath(localPath);
+
+        // // Create the new Prefab and log whether Prefab was saved successfully.
+        // bool prefabSuccess;
+        // PrefabUtility.SaveAsPrefabAsset(map, localPath, out prefabSuccess);
+        // if (prefabSuccess == true)
+        //     Debug.Log("Prefab was saved successfully");
+        // else
+        //     Debug.Log("Prefab failed to save" + prefabSuccess);
+
     }
 
     public HexCell GetCell(Vector3 worldPosition)

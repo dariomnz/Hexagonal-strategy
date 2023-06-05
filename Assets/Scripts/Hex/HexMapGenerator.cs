@@ -20,10 +20,10 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
     static Biome[] biomes = {
-        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow),
-        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock),
-        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand),
-        new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Sand)
+        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow),
+        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock),
+        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass),
+        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass)
     };
 
     public HexGrid grid;
@@ -80,7 +80,7 @@ public class HexMapGenerator : MonoBehaviour
 
     static float[] temperatureBands = { 0.1f, 0.3f, 0.6f };
 
-    static float[] moistureBands = { 0.12f, 0.28f, 0.85f };
+    static float[] moistureBands = { 0.06f, 0.28f, 0.85f };
 
     HexCellPriorityQueue searchFrontier;
     int searchFrontierPhase;
@@ -135,14 +135,14 @@ public class HexMapGenerator : MonoBehaviour
             float weight =
                 data.moisture * (cell.Elevation - waterLevel) /
                 (elevationMaximum - waterLevel);
-            if (weight < 0.75f)
+            if (weight > 0.75f)
             {
                 riverOrigins.Add(cell);
                 riverOrigins.Add(cell);
             }
-            if (weight < 0.5f)
+            if (weight > 0.5f)
                 riverOrigins.Add(cell);
-            if (weight < 0.25f)
+            if (weight > 0.25f)
                 riverOrigins.Add(cell);
         }
         int riverBudget = Mathf.RoundToInt(landCells * riverPercentage * 0.01f);
@@ -513,6 +513,8 @@ public class HexMapGenerator : MonoBehaviour
 
     void SetTerrainType()
     {
+
+        int rockDesertElevation = elevationMaximum - (elevationMaximum - waterLevel) / 2;
         for (int i = 0; i < grid.cellCount; i++)
         {
             HexCell cell = grid.GetCell(i);
@@ -529,6 +531,14 @@ public class HexMapGenerator : MonoBehaviour
                     if (moisture < moistureBands[m])
                         break;
                 Biome cellBiome = biomes[t * 4 + m];
+                if (cellBiome.terrain == 0)
+                {
+                    if (cell.Elevation >= rockDesertElevation)
+                        cellBiome.terrain = HexTerrains.HexType.Rock;
+                }
+                else if (cell.Elevation == elevationMaximum)
+                    cellBiome.terrain = HexTerrains.HexType.Snow;
+
                 cell.TerrainType = cellBiome.terrain;
             }
             else

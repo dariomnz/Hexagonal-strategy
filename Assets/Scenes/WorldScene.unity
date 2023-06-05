@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.03128515, g: 0.009394859, b: 0.013042596, a: 1}
+  m_IndirectSpecularColor: {r: 0.031115646, g: 0.009352648, b: 0.012993505, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -494,7 +494,7 @@ MonoBehaviour:
   cameraDragSpeed: 300
   hexGrid: {fileID: 686871076}
   IsController: 1
-  IsCentringMap: 1
+  IsCentringMap: 0
 --- !u!1 &36396536
 GameObject:
   m_ObjectHideFlags: 0
@@ -11883,7 +11883,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 333911.44}
+  m_AnchoredPosition: {x: 0, y: 395431.06}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1553376901

@@ -18,7 +18,8 @@ public class HexCell : MonoBehaviour
             if (terrainType != value)
             {
                 terrainType = value;
-                UpdateMesh();
+                Refresh();
+                
             }
         }
     }

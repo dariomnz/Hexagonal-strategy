@@ -14,6 +14,7 @@ public class HexTerrains : ScriptableObject
         Grass,
         Rock,
         Snow,
+        Dirt,
     };
 
     public enum HexMaterial
@@ -23,6 +24,7 @@ public class HexTerrains : ScriptableObject
         Grass = HexType.Grass,
         Rock = HexType.Rock,
         Snow = HexType.Snow,
+        Dirt = HexType.Dirt,
         Road,
         River,
     };
