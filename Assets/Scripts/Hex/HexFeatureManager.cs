@@ -41,8 +41,8 @@ public class HexFeatureManager : MonoBehaviour
             //     DestroyImmediate(currentFeatureGameObject);
             //     currentFeatureGameObject = null;
             // }
-            // currentFeatureGameObject = Instantiate(featurePrefabs[feature], container);
-            currentFeatureGameObject = PrefabUtility.InstantiatePrefab(featurePrefabs[feature], container) as GameObject;
+            currentFeatureGameObject = Instantiate(featurePrefabs[feature], container);
+            // currentFeatureGameObject = PrefabUtility.InstantiatePrefab(featurePrefabs[feature], container) as GameObject;
             // currentFeatureGameObject.transform.SetParent(container, false);
             currentFeature = feature;
         }

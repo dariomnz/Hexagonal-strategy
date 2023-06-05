@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.031115646, g: 0.009352648, b: 0.012993505, a: 1}
+  m_IndirectSpecularColor: {r: 0.031148419, g: 0.009361705, b: 0.013003093, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -494,7 +494,7 @@ MonoBehaviour:
   cameraDragSpeed: 300
   hexGrid: {fileID: 686871076}
   IsController: 1
-  IsCentringMap: 0
+  IsCentringMap: 1
 --- !u!1 &36396536
 GameObject:
   m_ObjectHideFlags: 0
@@ -5191,7 +5191,17 @@ MonoBehaviour:
   cellCountX: 24
   cellCountZ: 24
   cellPrefab: {fileID: -133454396152487064, guid: c9c22a0ed2031e54e842ff742c275f93, type: 3}
+  cellPrefabReference:
+    m_AssetGUID: c9c22a0ed2031e54e842ff742c275f93
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
   cellLabelPrefab: {fileID: 2690722690630842373, guid: 628192a7abf14924d83ef4271d528a1c, type: 3}
+  cellLabelPrefabReference:
+    m_AssetGUID: 628192a7abf14924d83ef4271d528a1c
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
   chunkPrefab: {fileID: -7225762099027937627, guid: e53c3f57325107f44a51e60c9b3beef4, type: 3}
 --- !u!4 &686871077
 Transform:
@@ -11883,7 +11893,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 395431.06}
+  m_AnchoredPosition: {x: 0, y: 464626.44}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1553376901

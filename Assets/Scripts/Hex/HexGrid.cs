@@ -6,6 +6,10 @@ using TMPro;
 using System.IO;
 using System.Collections;
 using UnityEditor;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Linq;
+
 
 public class HexGrid : MonoBehaviour
 {
@@ -15,8 +19,10 @@ public class HexGrid : MonoBehaviour
     public int cellCount { get => cellCountX * cellCountZ; }
     int chunkCountX, chunkCountZ;
 
-    public HexCell cellPrefab;
-    public TextMeshProUGUI cellLabelPrefab;
+    // public HexCell cellPrefab;
+    public AssetReferenceGameObject cellPrefabReference;
+    // public TextMeshProUGUI cellLabelPrefab;
+    public AssetReferenceGameObject cellLabelPrefabReference;
 
     public HexGridChunk chunkPrefab;
 
@@ -81,11 +87,11 @@ public class HexGrid : MonoBehaviour
 
         CreateChunks();
 
-        // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-        // sw.Start();
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         yield return StartCoroutine(CreateCells());
-        // sw.Stop();
-        // Debug.Log(string.Format("CreateCells in: {0}ms", sw.ElapsedMilliseconds));
+        sw.Stop();
+        Debug.Log(string.Format("CreateCells in: {0}ms", sw.ElapsedMilliseconds));
         LoadingScreen.Instance.Close();
     }
 
@@ -97,8 +103,8 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < chunkCountX; x++)
             {
-                // HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab, map.transform);
-                HexGridChunk chunk = chunks[i++] = PrefabUtility.InstantiatePrefab(chunkPrefab, map.transform) as HexGridChunk;
+                HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab, map.transform);
+                // HexGridChunk chunk = chunks[i++] = PrefabUtility.InstantiatePrefab(chunkPrefab, map.transform) as HexGridChunk;
                 chunk.hexGrid = this;
 
                 Vector3 newPosition = Vector3.zero;
@@ -123,6 +129,7 @@ public class HexGrid : MonoBehaviour
     IEnumerator CreateCells()
     {
         cells = new HexCell[cellCountX * cellCountZ];
+        AsyncOperationHandle<GameObject>[] asyncOperationHandles = new AsyncOperationHandle<GameObject>[cellCountX * cellCountZ * 2];
 
         for (int z = 0, i = 0; z < cellCountZ; z++)
         {
@@ -134,14 +141,34 @@ public class HexGrid : MonoBehaviour
                 Vector3 newPosition = GetPosition(coordinates);
                 HexGridChunk chunk = GetChunk(chunkX, chunkZ);
                 // HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, chunk.transform);
-                HexCell cell = cells[i] = PrefabUtility.InstantiatePrefab(cellPrefab, chunk.transform) as HexCell;
-                cell.coordinates = coordinates;
-                newPosition.x -= HexMetrics.chunkSizeX * HexMetrics.xDiameter * chunkX;
-                newPosition.z -= HexMetrics.chunkSizeZ * HexMetrics.zDiameter * chunkZ;
-                cell.transform.localPosition = newPosition;
-                cell.Index = i;
-                AddCellToChunk(x, z, cell);
+                asyncOperationHandles[i] = Addressables.InstantiateAsync(cellPrefabReference, chunk.transform);
+                int _x = x, _z = z, _i = i;
+                asyncOperationHandles[i].Completed += (asyncOperationHandle) =>
+                {
+                    // Debug.Log(string.Format("x: {0} z: {1} i: {2}", _x, _z, _i));
+                    // HexCell cell = cells[i] = PrefabUtili x, .InstantiatePrefab(cellPrefab, chunk.transform) as HexCell;
+                    HexCell cell = cells[_i] = asyncOperationHandle.Result.GetComponent<HexCell>();
+                    cell.coordinates = coordinates;
+                    newPosition.x -= HexMetrics.chunkSizeX * HexMetrics.xDiameter * chunkX;
+                    newPosition.z -= HexMetrics.chunkSizeZ * HexMetrics.zDiameter * chunkZ;
+                    cell.transform.localPosition = newPosition;
+                    cell.Index = _i;
+                    AddCellToChunk(_x, _z, cell);
 
+                    // TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
+
+                    asyncOperationHandles[_i + cellCountX * cellCountZ] = Addressables.InstantiateAsync(cellLabelPrefabReference, cell.chunk.gridCanvas.transform);
+
+                    asyncOperationHandles[_i + cellCountX * cellCountZ].Completed += (asyncOperationHandle) =>
+                    {
+                        TextMeshProUGUI label = asyncOperationHandle.Result.GetComponent<TextMeshProUGUI>();
+                        label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
+                        cell.uiRect = label.rectTransform;
+                        cell.UpdateLabel();
+                    };
+
+                    LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 2));
+                };
 
                 // HexCoordinates coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
                 // int chunkX = x / HexMetrics.chunkSizeX;
@@ -154,18 +181,17 @@ public class HexGrid : MonoBehaviour
                 // AddCellToChunk(x, z, cell);
 
                 // TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
-                TextMeshProUGUI label = PrefabUtility.InstantiatePrefab(cellLabelPrefab, cell.chunk.gridCanvas.transform) as TextMeshProUGUI;
-                label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
-                cell.uiRect = label.rectTransform;
-                cell.UpdateLabel();
+
                 i++;
             }
-            if (z % (cellCountZ / 20) == 0)
+            if (z % (HexMetrics.chunkSizeZ / 2) == 0)
             {
                 LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 2));
                 yield return null;
             }
         }
+
+        yield return new WaitUntil(() => asyncOperationHandles.All(x => x.IsDone));
 
         for (int z = 0, i = 0; z < cellCountZ; z++)
         {

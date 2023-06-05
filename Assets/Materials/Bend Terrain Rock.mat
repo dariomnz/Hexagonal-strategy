@@ -88,7 +88,7 @@ Material:
     - Boolean_2ac228a431f4483da3d58d8e681eb3a7: 1
     - _AlphaClip: 0
     - _Blend: 0
-    - _Bottom_Extrude: 1
+    - _Bottom_Extrude: 0
     - _BumpScale: 1
     - _CellHeight: 5
     - _ClearCoatMask: 0
