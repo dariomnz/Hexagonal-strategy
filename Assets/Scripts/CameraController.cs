@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class CameraController : MonoBehaviour
 {
@@ -99,5 +100,28 @@ public class CameraController : MonoBehaviour
     public void CenterMap()
     {
         hexGrid.CenterMap(transform.position.x, transform.position.z);
+    }
+
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write(CameraController.Instance.transform.position.x);
+        writer.Write(CameraController.Instance.transform.position.y);
+        writer.Write(CameraController.Instance.transform.position.z);
+        writer.Write(CameraController.Instance.transform.rotation.eulerAngles.x);
+        writer.Write(CameraController.Instance.transform.rotation.eulerAngles.y);
+        writer.Write(CameraController.Instance.transform.rotation.eulerAngles.z);
+    }
+
+    public void Load(BinaryReader reader)
+    {
+        Vector3 auxVec;
+        auxVec.x = reader.ReadSingle();
+        auxVec.y = reader.ReadSingle();
+        auxVec.z = reader.ReadSingle();
+        CameraController.Instance.transform.position = auxVec;
+        auxVec.x = reader.ReadSingle();
+        auxVec.y = reader.ReadSingle();
+        auxVec.z = reader.ReadSingle();
+        CameraController.Instance.transform.rotation = Quaternion.Euler(auxVec);
     }
 }

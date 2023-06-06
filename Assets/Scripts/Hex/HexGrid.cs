@@ -1,4 +1,4 @@
-using System;
+// using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,8 +26,8 @@ public class HexGrid : MonoBehaviour
 
     public HexGridChunk chunkPrefab;
 
-    [NonSerialized] public GameObject map;
-    [NonSerialized] public HexCell[] cells;
+    [System.NonSerialized] public GameObject map;
+    [System.NonSerialized] public HexCell[] cells;
 
     HexGridChunk[] chunks;
 
@@ -35,11 +35,13 @@ public class HexGrid : MonoBehaviour
     int searchFrontierPhase;
     HexCell currentPathFrom, currentPathTo;
     bool currentPathExists;
-    Vector3 currentCenterIndex = Vector3.zero;
+    Vector3 currentCenterIndex = Vector3.one * 9999;
+
+    public HexMapGenerator hexMapGenerator;
 
     void Start()
     {
-        StartCoroutine(GetComponent<HexMapGenerator>().GenerateMap(8 * HexMetrics.chunkSizeX, 8 * HexMetrics.chunkSizeZ));
+        StartCoroutine(hexMapGenerator.GenerateMap(8 * HexMetrics.chunkSizeX, 8 * HexMetrics.chunkSizeZ));
         // StartCoroutine(GetComponent<HexMapGenerator>().GenerateMap(20 * HexMetrics.chunkSizeX, 20 * HexMetrics.chunkSizeZ));
     }
 
@@ -67,6 +69,14 @@ public class HexGrid : MonoBehaviour
 
     public IEnumerator CreateMap(int _cellCountX, int _cellCountZ)
     {
+        if (!hexMapGenerator.useFixedSeed)
+        {
+            hexMapGenerator.seed = Random.Range(0, int.MaxValue);
+            hexMapGenerator.seed ^= (int)System.DateTime.Now.Ticks;
+            hexMapGenerator.seed ^= (int)Time.unscaledTime;
+            hexMapGenerator.seed &= int.MaxValue;
+        }
+        Random.InitState(hexMapGenerator.seed);
         LoadingScreen.Instance.Open();
         ClearPath();
         if (_cellCountX < HexMetrics.chunkSizeX || _cellCountZ < HexMetrics.chunkSizeZ)
@@ -78,7 +88,6 @@ public class HexGrid : MonoBehaviour
         cellCountZ = _cellCountZ;
         HexMetrics.cellSizeX = cellCountX;
         HexMetrics.cellSizeZ = cellCountZ;
-        CameraController.Instance?.ValidatePosition();
 
         chunkCountX = cellCountX / HexMetrics.chunkSizeX;
         chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
@@ -87,6 +96,7 @@ public class HexGrid : MonoBehaviour
 
         CreateChunks();
 
+        CameraController.Instance?.CenterMap();
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
         yield return StartCoroutine(CreateCells());
@@ -378,36 +388,15 @@ public class HexGrid : MonoBehaviour
             HexCell current = searchFrontier.Dequeue();
             current.SearchPhase += 1;
             if (current == toCell)
-                // {
                 return true;
-            //     current = current.PathFrom;
-            //     while (current != fromCell)
-            //     {
-            //         current.EnableHighlight(Color.white);
-            //         current = current.PathFrom;
-            //     }
-            //     break;
-            // }
 
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
                 HexCell neighbor = current.GetNeighbor(d);
-                if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase)
+                int distance;
+                if (!CanPassPathFind(current, d, out distance))
                     continue;
-                if (neighbor.TerrainType == HexTerrains.HexType.Water)
-                    continue;
-                if (neighbor.HasRiver())
-                    continue;
-                int distance = current.Distance;
-                if (current.HasRoadThroughEdge(d))
-                    distance += 1;
-                else
-                    distance += 10;
-                int elevationDiff = Mathf.Abs(neighbor.Elevation - current.Elevation);
-                if (elevationDiff > 1)
-                    continue;
-                if (elevationDiff == 1)
-                    distance += 5;
+
                 if (neighbor.SearchPhase < searchFrontierPhase)
                 {
                     neighbor.SearchPhase = searchFrontierPhase;
@@ -426,6 +415,31 @@ public class HexGrid : MonoBehaviour
             }
         }
         return false;
+    }
+
+    bool CanPassPathFind(HexCell current, HexDirection d, out int distance)
+    {
+        HexCell neighbor = current.GetNeighbor(d);
+        distance = current.Distance;
+        if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase)
+            return false;
+        if (neighbor.TerrainType == HexTerrains.HexType.Water)
+            return false;
+        if (HexFeatureManager.noWalkable.Contains(neighbor.featureManager.currentFeature))
+            return false;
+        if (neighbor.HasRiver())
+            distance += 10;
+
+        if (current.HasRoadThroughEdge(d))
+            distance += 1;
+        else
+            distance += 10;
+        int elevationDiff = Mathf.Abs(neighbor.Elevation - current.Elevation);
+        if (elevationDiff > 1)
+            return false;
+        if (elevationDiff == 1)
+            distance += 5;
+        return true;
     }
 
     public void ShowUI(bool visible)
@@ -489,6 +503,7 @@ public class HexGrid : MonoBehaviour
 
     public void Save(BinaryWriter writer)
     {
+        CameraController.Instance.Save(writer);
         writer.Write(cellCountX);
         writer.Write(cellCountZ);
         for (int i = 0; i < cells.Length; i++)
@@ -500,6 +515,7 @@ public class HexGrid : MonoBehaviour
     public IEnumerator Load(BinaryReader reader)
     {
         StopAllCoroutines();
+        CameraController.Instance.Load(reader);
         yield return StartCoroutine(CreateMap(reader.ReadInt32(), reader.ReadInt32()));
         for (int i = 0; i < cells.Length; i++)
         {

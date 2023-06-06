@@ -625,6 +625,7 @@ PlayerSettings:
   scriptingDefineSymbols:
     PS4: RH_SerializedDictionary
     Standalone: RH_SerializedDictionary
+    iPhone: RH_SerializedDictionary
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

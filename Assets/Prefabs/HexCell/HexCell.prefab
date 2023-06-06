@@ -85,7 +85,7 @@ MonoBehaviour:
       draggable: 1
       expandable: 1
       multipleSelection: 1
-      isExpanded: 1
+      isExpanded: 0
       label:
         m_Text: Keys
         m_Image: {fileID: 0}
@@ -100,7 +100,7 @@ MonoBehaviour:
       elementNameOverride: 
       elementIcon: {fileID: 0}
     reqReferences: {fileID: 0}
-    isExpanded: 1
+    isExpanded: 0
     _keyValues: 0100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
     _keys: 0100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
     _values:
@@ -118,6 +118,7 @@ MonoBehaviour:
     - {fileID: 5660914543188298848, guid: e5fb4ba621d9ff94b861c366866122bf, type: 3}
     - {fileID: 5660914543188298848, guid: 4a94adf70244e4d4fa06f6b566da469d, type: 3}
   currentFeature: 0
+  hexCell: {fileID: -133454396152487064}
 --- !u!64 &4743204687484512426
 MeshCollider:
   m_ObjectHideFlags: 0

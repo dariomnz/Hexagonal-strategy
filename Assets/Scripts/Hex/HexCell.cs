@@ -353,7 +353,7 @@ public class HexCell : MonoBehaviour
         else
             writer.Write((byte)0);
 
-        writer.Write((byte)featureManager.currentFeature);
+        featureManager.Save(writer);
         int roadFlags = 0;
         for (int i = 0; i < roads.Length; i++)
             if (roads[i])
@@ -389,7 +389,7 @@ public class HexCell : MonoBehaviour
         else
             hasOutgoingRiver = false;
 
-        featureManager.AddFeature((HexFeatureManager.Features)reader.ReadByte());
+        featureManager.Load(reader);
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)
             roads[i] = (roadFlags & (1 << i)) != 0;
@@ -397,4 +397,8 @@ public class HexCell : MonoBehaviour
         Refresh();
     }
 
+    public override string ToString()
+    {
+        return coordinates.ToString();
+    }
 }

@@ -100,14 +100,6 @@ public class HexMapGenerator : MonoBehaviour
     public IEnumerator GenerateMap(int x, int z)
     {
         Random.State originalRandomState = Random.state;
-        if (!useFixedSeed)
-        {
-            seed = Random.Range(0, int.MaxValue);
-            seed ^= (int)System.DateTime.Now.Ticks;
-            seed ^= (int)Time.unscaledTime;
-            seed &= int.MaxValue;
-        }
-        Random.InitState(seed);
         yield return StartCoroutine(grid.CreateMap(x, z));
         if (searchFrontier == null)
         {
@@ -553,11 +545,11 @@ public class HexMapGenerator : MonoBehaviour
                 if (!cell.HasRiver())
                 {
                     float rand = Random.Range(0f, 1f);
-                    if (HexFeatureManager.forest.Contains(cellBiome.feature))
+                    if (HexFeatureManager.forests.Contains(cellBiome.feature))
                         if (forestPercentage < rand)
                             continue;
 
-                    if (HexFeatureManager.rock.Contains(cellBiome.feature))
+                    if (HexFeatureManager.rocks.Contains(cellBiome.feature))
                         if (rockPercentage < rand)
                             continue;
                     cell.featureManager.AddFeature(cellBiome.feature, randomRotation: true);

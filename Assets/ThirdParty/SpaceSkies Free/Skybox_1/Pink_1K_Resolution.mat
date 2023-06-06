@@ -99,9 +99,9 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Rotation: 0
-    - _RotationX: 0.38047937
-    - _RotationY: -0.14377119
-    - _RotationZ: 0.32291535
+    - _RotationX: -0.4178946
+    - _RotationY: 0.3113435
+    - _RotationZ: 0.5099083
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
