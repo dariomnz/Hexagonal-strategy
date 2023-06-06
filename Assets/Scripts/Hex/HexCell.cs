@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using TMPro;
+using UnityEngine.AddressableAssets;
 
 public class HexCell : MonoBehaviour
 {
@@ -19,7 +20,6 @@ public class HexCell : MonoBehaviour
             {
                 terrainType = value;
                 Refresh();
-                
             }
         }
     }
@@ -103,6 +103,12 @@ public class HexCell : MonoBehaviour
     public bool IsUnderwater => waterLevel > elevation || waterDeep > 0;
 
     public void Refresh() => enabled = true;
+
+    void OnDestroy()
+    {
+        Addressables.ReleaseInstance(uiRect.gameObject);
+        Addressables.ReleaseInstance(gameObject);
+    }
 
     void LateUpdate()
     {
