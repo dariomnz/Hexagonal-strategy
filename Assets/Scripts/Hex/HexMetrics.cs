@@ -30,4 +30,22 @@ public class HexMetrics : MonoBehaviour
     public const float elevationStep = 0.5f;
 
     public HexTerrains hexTerrains;
+
+    private static Vector3[] _hexVertex = null;
+
+    public static Vector3[] hexVertex
+    {
+        get
+        {
+            if (_hexVertex != null)
+                return _hexVertex;
+            Vector3[] outVector = new Vector3[6];
+            for (int i = 0; i < 6; i++)
+            {
+                outVector[i] = Quaternion.AngleAxis(60 * i, Vector3.up) * (Vector3.forward * xRadius);
+            }
+            _hexVertex = outVector;
+            return outVector;
+        }
+    }
 }

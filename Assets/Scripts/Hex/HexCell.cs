@@ -95,6 +95,8 @@ public class HexCell : MonoBehaviour
     public int waterLevel { get; set; }
     public int waterDeep { get; set; }
     public bool isLake { get; set; } = false;
+    public float temperature;
+    public float moisture;
     GameObject waterContainer;
     public HexTerrains.HexType terrainWaterFloorType { get; set; }
 
@@ -381,7 +383,7 @@ public class HexCell : MonoBehaviour
         else
             hasOutgoingRiver = false;
 
-        featureManager.AddFeature(this, (HexFeatureManager.Features)reader.ReadByte());
+        featureManager.AddFeature((HexFeatureManager.Features)reader.ReadByte());
         int roadFlags = reader.ReadByte();
         for (int i = 0; i < roads.Length; i++)
             roads[i] = (roadFlags & (1 << i)) != 0;

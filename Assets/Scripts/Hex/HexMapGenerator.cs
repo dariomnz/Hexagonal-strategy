@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using System.Linq;
 
 public class HexMapGenerator : MonoBehaviour
 {
@@ -13,17 +14,19 @@ public class HexMapGenerator : MonoBehaviour
     struct Biome
     {
         public HexTerrains.HexType terrain;
+        public HexFeatureManager.Features feature;
 
-        public Biome(HexTerrains.HexType terrain)
+        public Biome(HexTerrains.HexType terrain, HexFeatureManager.Features feature)
         {
             this.terrain = terrain;
+            this.feature = feature;
         }
     }
     static Biome[] biomes = {
-        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow), new Biome(HexTerrains.HexType.Snow),
-        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock), new Biome(HexTerrains.HexType.Rock),
-        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass),
-        new Biome(HexTerrains.HexType.Sand), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass), new Biome(HexTerrains.HexType.Grass)
+        new Biome(HexTerrains.HexType.Sand,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Snow,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Snow,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Snow,HexFeatureManager.Features.None),
+        new Biome(HexTerrains.HexType.Sand,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Rock,HexFeatureManager.Features.Rock1), new Biome(HexTerrains.HexType.Rock,HexFeatureManager.Features.Rock3), new Biome(HexTerrains.HexType.Rock,HexFeatureManager.Features.Forest2),
+        new Biome(HexTerrains.HexType.Sand,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Rock2), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Forest1), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Forest2),
+        new Biome(HexTerrains.HexType.Sand,HexFeatureManager.Features.None), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Forest1), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Forest2), new Biome(HexTerrains.HexType.Grass,HexFeatureManager.Features.Forest3)
     };
 
     public HexGrid grid;
@@ -66,7 +69,6 @@ public class HexMapGenerator : MonoBehaviour
     public int riverPercentage = 10;
     [Range(0f, 1f)]
     public float lowTemperature = 0f;
-
     [Range(0f, 1f)]
     public float highTemperature = 1f;
     public enum HemisphereMode
@@ -77,6 +79,11 @@ public class HexMapGenerator : MonoBehaviour
     public HemisphereMode hemisphere;
     [Range(0f, 1f)]
     public float temperatureJitter = 0.1f;
+
+    [Range(0f, 1f)]
+    public float forestPercentage = 0.6f;
+    [Range(0f, 1f)]
+    public float rockPercentage = 0.6f;
 
     static float[] temperatureBands = { 0.1f, 0.3f, 0.6f };
 
@@ -521,6 +528,8 @@ public class HexMapGenerator : MonoBehaviour
             HexCell cell = grid.GetCell(i);
             float temperature = DetermineTemperature(cell);
             float moisture = climate[i].moisture;
+            cell.temperature = temperature;
+            cell.moisture = moisture;
             if (!cell.IsUnderwater)
             {
                 int t = 0;
@@ -537,10 +546,22 @@ public class HexMapGenerator : MonoBehaviour
                     if (cell.Elevation >= rockDesertElevation)
                         cellBiome.terrain = HexTerrains.HexType.Rock;
                 }
-                else if (cell.Elevation == elevationMaximum)
-                    cellBiome.terrain = HexTerrains.HexType.Snow;
+                // else if (cell.Elevation == elevationMaximum)
+                // cellBiome.terrain = HexTerrains.HexType.Snow;
 
                 cell.TerrainType = cellBiome.terrain;
+                if (!cell.HasRiver())
+                {
+                    float rand = Random.Range(0f, 1f);
+                    if (HexFeatureManager.forest.Contains(cellBiome.feature))
+                        if (forestPercentage < rand)
+                            continue;
+
+                    if (HexFeatureManager.rock.Contains(cellBiome.feature))
+                        if (rockPercentage < rand)
+                            continue;
+                    cell.featureManager.AddFeature(cellBiome.feature, randomRotation: true);
+                }
             }
             else
             {
@@ -599,7 +620,6 @@ public class HexMapGenerator : MonoBehaviour
         float temperature = Mathf.LerpUnclamped(lowTemperature, highTemperature, latitude);
         temperature *= 1f - (cell.Elevation - waterLevel) / (elevationMaximum - waterLevel + 1f);
         temperature += (Mathf.PerlinNoise(cell.transform.position.x * 0.1f, cell.transform.position.z * 0.1f) * 2f - 1f) * temperatureJitter;
-
 
         return temperature;
     }

@@ -64,6 +64,8 @@ MonoBehaviour:
   roads: 000000000000
   meshFilter: {fileID: 3852999006284569161}
   meshRenderer: {fileID: 742310195970990170}
+  temperature: 0
+  moisture: 0
 --- !u!114 &3743193128222472338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83,7 +85,7 @@ MonoBehaviour:
       draggable: 1
       expandable: 1
       multipleSelection: 1
-      isExpanded: 0
+      isExpanded: 1
       label:
         m_Text: Keys
         m_Image: {fileID: 0}
@@ -98,14 +100,23 @@ MonoBehaviour:
       elementNameOverride: 
       elementIcon: {fileID: 0}
     reqReferences: {fileID: 0}
-    isExpanded: 0
-    _keyValues: 01000000020000000300000004000000
-    _keys: 01000000020000000300000004000000
+    isExpanded: 1
+    _keyValues: 0100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
+    _keys: 0100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d000000
     _values:
     - {fileID: 5660914543188298848, guid: 4a690b374e073cb468893a465707d5c5, type: 3}
     - {fileID: 5660914543188298848, guid: 8f802f821b30f3b47b6fcc6c054996da, type: 3}
     - {fileID: 5660914543188298848, guid: 2201c6805e4b180408fd996be3423d89, type: 3}
     - {fileID: 5660914543188298848, guid: 9039248b37f7d2449af45568329fd52d, type: 3}
+    - {fileID: 5660914543188298848, guid: 848eb2ac44d2d1d4285250a38efc0c2d, type: 3}
+    - {fileID: 5660914543188298848, guid: db8438ad464dc9e45b34fa11d483b37a, type: 3}
+    - {fileID: 5660914543188298848, guid: fd7ec0c0a57b55c4eaff05c7653a7068, type: 3}
+    - {fileID: 5660914543188298848, guid: ace12bebb2ba5124ea9b76c1620a0ae8, type: 3}
+    - {fileID: 5660914543188298848, guid: 49e10d38032ef3f4b97904ea3c534f99, type: 3}
+    - {fileID: 5660914543188298848, guid: 2201c6805e4b180408fd996be3423d89, type: 3}
+    - {fileID: 5660914543188298848, guid: 2cebd13428b7efa4d8b74dc1e474edaf, type: 3}
+    - {fileID: 5660914543188298848, guid: e5fb4ba621d9ff94b861c366866122bf, type: 3}
+    - {fileID: 5660914543188298848, guid: 4a94adf70244e4d4fa06f6b566da469d, type: 3}
   currentFeature: 0
 --- !u!64 &4743204687484512426
 MeshCollider:

@@ -129,7 +129,7 @@ public class HexMapEditor : MonoBehaviour
             if (activeFeature == HexFeatureManager.Features.None)
                 cell.featureManager.Clear();
             else
-                cell.featureManager.AddFeature(cell, activeFeature);
+                cell.featureManager.AddFeature(activeFeature);
         }
         if (riverMode == OptionalToggle.No)
             cell.RemoveRiver();
