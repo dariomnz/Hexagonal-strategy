@@ -42,14 +42,6 @@ public class CameraController : MonoBehaviour
         angle = transform.eulerAngles;
     }
 
-    public void ValidatePosition()
-    {
-        Vector3 position = transform.position;
-        position.x = hexGrid.cellCountX / 2 * HexMetrics.xDiameter;
-        position.z = hexGrid.cellCountZ / 2 * HexMetrics.zDiameter;
-        transform.position = position;
-    }
-
     void Update()
     {
         if (IsController)

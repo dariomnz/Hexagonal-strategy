@@ -99,6 +99,7 @@ public class HexCell : MonoBehaviour
     public float moisture;
     GameObject waterContainer;
     public HexTerrains.HexType terrainWaterFloorType { get; set; }
+    public HexUnit Unit { get; set; }
 
     public bool IsUnderwater => waterLevel > elevation || waterDeep > 0;
 

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using TMPro;
@@ -24,59 +23,84 @@ public class HexMapEditor : MonoBehaviour
     OptionalToggle riverMode;
     bool isDrag;
     HexDirection dragDirection;
-    HexCell previousCell, searchFromCell, searchToCell;
-    bool editMode;
+    // HexCell previousCell, searchFromCell, searchToCell;
+    HexCell previousCell;
+    // bool editMode;
+    public HexUnit unitPrefab;
+
+    void Awake()
+    {
+        SetEditMode(false);
+    }
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
-            HandleInput();
-        else
-            previousCell = null;
+        if (!EventSystem.current.IsPointerOverGameObject())
+        {
+            if (Input.GetMouseButton(0))
+            {
+                HandleInput();
+                return;
+            }
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                if (Input.GetKey(KeyCode.LeftShift))
+                    DestroyUnit();
+                else
+                    CreateUnit();
+                return;
+            }
+        }
+        previousCell = null;
     }
 
     void HandleInput()
     {
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit))
+        HexCell currentCell = GetCellUnderCursor();
+        if (currentCell)
         {
-            HexCell currentCell = hit.collider.GetComponent<HexCell>();
-            if (!currentCell)
-                return;
-            // HexCell currentCell = hexGrid.GetCell(hit.point);
             if (previousCell && previousCell != currentCell)
                 ValidateDrag(currentCell);
             else
                 isDrag = false;
-            if (editMode)
-                EditCells(currentCell);
-            else if (Input.GetKey(KeyCode.LeftShift) && searchToCell != currentCell)
-            {
-                if (searchFromCell != currentCell)
-                {
-                    if (searchFromCell)
-                        searchFromCell.DisableHighlight();
-                    searchFromCell = currentCell;
-                    searchFromCell.EnableHighlight(Color.blue);
-                    if (searchFromCell && searchToCell)
-                        hexGrid.FindPath(searchFromCell, searchToCell);
-                }
-            }
-            else if (searchFromCell && searchFromCell != currentCell)
-            {
-                if (searchToCell != currentCell)
-                {
-                    searchToCell = currentCell;
-                    if (searchFromCell && searchToCell)
-                        hexGrid.FindPath(searchFromCell, searchToCell);
-                }
-            }
 
+            EditCells(currentCell);
             previousCell = currentCell;
         }
         else
             previousCell = null;
+    }
+
+    void CreateUnit()
+    {
+        HexCell cell = GetCellUnderCursor();
+        if (!cell)
+            cell = GetUnitUnderCursor()?.Location;
+        if (cell && !cell.Unit)
+        {
+            hexGrid.AddUnit(Instantiate(HexMetrics.Instance.hexUnits.unitsPrefabs[HexUnits.UnitType.Base]), cell, Random.Range(0f, 360f));
+        }
+    }
+
+    void DestroyUnit()
+    {
+        HexCell cell = GetCellUnderCursor();
+        if (!cell)
+            cell = GetUnitUnderCursor()?.Location;
+        if (cell && cell.Unit)
+        {
+            hexGrid.RemoveUnit(cell.Unit);
+        }
+    }
+
+    HexCell GetCellUnderCursor()
+    {
+        return hexGrid.GetCell(Camera.main.ScreenPointToRay(Input.mousePosition));
+    }
+
+    HexUnit GetUnitUnderCursor()
+    {
+        return hexGrid.GetUnit(Camera.main.ScreenPointToRay(Input.mousePosition));
     }
 
     void ValidateDrag(HexCell currentCell)
@@ -91,6 +115,7 @@ public class HexMapEditor : MonoBehaviour
         }
         isDrag = false;
     }
+
     void EditCells(HexCell center)
     {
         if (center == null)
@@ -188,13 +213,9 @@ public class HexMapEditor : MonoBehaviour
         activeFeature = (HexFeatureManager.Features)index;
     }
 
-    public void ShowUI(bool visible)
-    {
-        hexGrid.ShowUI(visible);
-    }
-
     public void SetEditMode(bool toggle)
     {
-        editMode = toggle;
+        // editMode = toggle;
+        enabled = toggle;
     }
 }

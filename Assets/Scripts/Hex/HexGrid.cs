@@ -28,6 +28,7 @@ public class HexGrid : MonoBehaviour
 
     [System.NonSerialized] public GameObject map;
     [System.NonSerialized] public HexCell[] cells;
+    [System.NonSerialized] public List<HexUnit> units = new List<HexUnit>();
 
     HexGridChunk[] chunks;
 
@@ -36,6 +37,8 @@ public class HexGrid : MonoBehaviour
     HexCell currentPathFrom, currentPathTo;
     bool currentPathExists;
     Vector3 currentCenterIndex = Vector3.one * 9999;
+
+    public bool HasPath { get { return currentPathExists; } }
 
     public HexMapGenerator hexMapGenerator;
 
@@ -57,8 +60,12 @@ public class HexGrid : MonoBehaviour
 
     public void DeleteMap()
     {
-        foreach (Transform child in transform)
-            DestroyImmediate(child.gameObject);
+        ClearUnits();
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Destroy(transform.GetChild(i).gameObject);
+        }
 
         map = new GameObject("Map");
         map.transform.parent = transform;
@@ -96,6 +103,7 @@ public class HexGrid : MonoBehaviour
 
         CreateChunks();
 
+        currentCenterIndex = Vector3.one * 9999;
         CameraController.Instance?.CenterMap();
         System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         sw.Start();
@@ -275,12 +283,6 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    public HexCell GetCell(Vector3 worldPosition)
-    {
-        HexCoordinates coordinates = HexCoordinates.FromPosition(worldPosition);
-        return GetCell(coordinates);
-    }
-
     public HexCell GetCell(HexCoordinates coordinates)
     {
         int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;
@@ -288,6 +290,16 @@ public class HexGrid : MonoBehaviour
             return cells[index];
         else
             return null;
+    }
+
+    public HexCell GetCell(Ray ray)
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            return hit.collider.GetComponent<HexCell>();
+        }
+        return null;
     }
 
     public HexCell GetCell(int xOffset, int zOffset)
@@ -303,6 +315,38 @@ public class HexGrid : MonoBehaviour
     public HexGridChunk GetChunk(int xOffset, int zOffset)
     {
         return chunks[xOffset + zOffset * chunkCountX];
+    }
+
+    public HexUnit GetUnit(Ray ray)
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            return hit.collider.GetComponentInParent<HexUnit>();
+        }
+        return null;
+    }
+
+    public void AddUnit(HexUnit unit, HexCell location, float orientation)
+    {
+        units.Add(unit);
+        unit.Location = location;
+        unit.Orientation = orientation;
+    }
+
+    public void RemoveUnit(HexUnit unit)
+    {
+        units.Remove(unit);
+        unit.Die();
+    }
+
+    void ClearUnits()
+    {
+        for (int i = 0; i < units.Count; i++)
+        {
+            units[i].Die();
+        }
+        units.Clear();
     }
 
     public void FindPath(HexCell fromCell, HexCell toCell)
@@ -337,7 +381,7 @@ public class HexGrid : MonoBehaviour
         currentPathTo.EnableHighlight(Color.red);
     }
 
-    void ClearPath()
+    public void ClearPath()
     {
         if (currentPathExists)
         {
@@ -421,7 +465,11 @@ public class HexGrid : MonoBehaviour
     {
         HexCell neighbor = current.GetNeighbor(d);
         distance = current.Distance;
-        if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase)
+        if (neighbor == null)
+            return false;
+        if (neighbor.SearchPhase > searchFrontierPhase)
+            return false;
+        if (neighbor.Unit)
             return false;
         if (neighbor.TerrainType == HexTerrains.HexType.Water)
             return false;
@@ -510,16 +558,28 @@ public class HexGrid : MonoBehaviour
         {
             cells[i].Save(writer);
         }
+
+        writer.Write(units.Count);
+        for (int i = 0; i < units.Count; i++)
+        {
+            units[i].Save(writer);
+        }
     }
 
     public IEnumerator Load(BinaryReader reader)
     {
         StopAllCoroutines();
+        ClearUnits();
         CameraController.Instance.Load(reader);
         yield return StartCoroutine(CreateMap(reader.ReadInt32(), reader.ReadInt32()));
         for (int i = 0; i < cells.Length; i++)
         {
             cells[i].Load(reader);
+        }
+        int unitCount = reader.ReadInt32();
+        for (int i = 0; i < unitCount; i++)
+        {
+            HexUnit.Load(reader, this);
         }
     }
 }

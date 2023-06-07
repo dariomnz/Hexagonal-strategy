@@ -30,6 +30,7 @@ public class HexMetrics : MonoBehaviour
     public const float elevationStep = 0.5f;
 
     public HexTerrains hexTerrains;
+    public HexUnits hexUnits;
 
     private static Vector3[] _hexVertex = null;
 

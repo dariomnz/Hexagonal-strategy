@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 [System.Serializable]
 public struct HexCoordinates
@@ -50,7 +51,7 @@ public struct HexCoordinates
     public int DistanceTo(HexCoordinates other)
     {
         HexCoordinates auxCoor = new HexCoordinates(other.X, other.Z);
-        
+
         int xyz = Mathf.Abs(auxCoor.X - X) +
                   Mathf.Abs(auxCoor.Y - Y) +
                   Mathf.Abs(auxCoor.Z - Z);
@@ -111,5 +112,19 @@ public struct HexCoordinates
     public string ToStringOnSeparateLines()
     {
         return X.ToString() + "\n" + Y.ToString() + "\n" + Z.ToString();
+    }
+
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write((short)x);
+        writer.Write((short)z);
+    }
+
+    public static HexCoordinates Load(BinaryReader reader)
+    {
+        HexCoordinates c;
+        c.x = reader.ReadInt16();
+        c.z = reader.ReadInt16();
+        return c;
     }
 }
