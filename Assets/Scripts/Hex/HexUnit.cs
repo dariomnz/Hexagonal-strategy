@@ -1,5 +1,8 @@
 using UnityEngine;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.Pool;
 
 public class HexUnit : MonoBehaviour
 {
@@ -32,9 +35,81 @@ public class HexUnit : MonoBehaviour
 
     public HexUnits.UnitType unitType = HexUnits.UnitType.Base;
 
+    List<HexCell> pathToTravel;
+    public int travelSpeed = 2;
+    public float rotationSpeed = 360f;
+
     public bool IsValidDestination(HexCell cell)
     {
         return !cell.IsUnderwater && !cell.Unit;
+    }
+
+    public void Travel(List<HexCell> path)
+    {
+        Location = path[path.Count - 1];
+        pathToTravel = path;
+        StopAllCoroutines();
+        StartCoroutine(TravelPath());
+    }
+
+    IEnumerator TravelPath()
+    {
+        Vector3 a, b, c = pathToTravel[0].transform.position;
+        transform.position = c;
+        yield return LookAt(pathToTravel[1].transform.position);
+        float t = Time.deltaTime * travelSpeed;
+        for (int i = 1; i < pathToTravel.Count; i++)
+        {
+            a = c;
+            b = pathToTravel[i - 1].transform.position;
+            c = (b + pathToTravel[i].transform.position) * 0.5f;
+            for (; t < 1f; t += Time.deltaTime * travelSpeed)
+            {
+                transform.position = Bezier.GetPoint(a, b, c, t);
+                Vector3 d = Bezier.GetDerivative(a, b, c, t);
+                d.y = 0f;
+                transform.localRotation = Quaternion.LookRotation(d);
+                yield return null;
+            }
+            t -= 1f;
+        }
+
+        a = c;
+        b = pathToTravel[pathToTravel.Count - 1].transform.position;
+        c = b;
+        for (; t < 1f; t += Time.deltaTime * travelSpeed)
+        {
+            transform.position = Bezier.GetPoint(a, b, c, t);
+            Vector3 d = Bezier.GetDerivative(a, b, c, t);
+            d.y = 0f;
+            transform.localRotation = Quaternion.LookRotation(d);
+            yield return null;
+        }
+        transform.position = location.transform.position;
+        orientation = transform.localRotation.eulerAngles.y;
+        ListPool<HexCell>.Release(pathToTravel);
+        pathToTravel = null;
+    }
+
+    IEnumerator LookAt(Vector3 point)
+    {
+        point.y = transform.position.y;
+        Quaternion fromRotation = transform.localRotation;
+        Quaternion toRotation = Quaternion.LookRotation(point - transform.position);
+        float angle = Quaternion.Angle(fromRotation, toRotation);
+        if (angle > 0f)
+        {
+            float speed = rotationSpeed / angle;
+            for (float t = Time.deltaTime * speed; t < 1f; t += Time.deltaTime * speed)
+            {
+                transform.localRotation =
+                    Quaternion.Slerp(fromRotation, toRotation, t);
+                yield return null;
+            }
+        }
+
+        transform.LookAt(point);
+        orientation = transform.localRotation.eulerAngles.y;
     }
 
     public void Die()

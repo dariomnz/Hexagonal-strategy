@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Linq;
-
+using UnityEngine.Pool;
 
 public class HexGrid : MonoBehaviour
 {
@@ -54,7 +54,6 @@ public class HexGrid : MonoBehaviour
         position.x = (coordinates.X + coordinates.Z * 0.5f) * HexMetrics.xDiameter;
         position.z = coordinates.Z * HexMetrics.zDiameter;
         position.y = 0;
-        // position.y = Mathf.PerlinNoise(position.x, position.z);
         return position;
     }
 
@@ -158,13 +157,11 @@ public class HexGrid : MonoBehaviour
                 int chunkZ = z / HexMetrics.chunkSizeZ;
                 Vector3 newPosition = GetPosition(coordinates);
                 HexGridChunk chunk = GetChunk(chunkX, chunkZ);
-                // HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, chunk.transform);
+
                 asyncOperationHandles[i] = Addressables.InstantiateAsync(cellPrefabReference, chunk.transform);
                 int _x = x, _z = z, _i = i;
                 asyncOperationHandles[i].Completed += (asyncOperationHandle) =>
                 {
-                    // Debug.Log(string.Format("x: {0} z: {1} i: {2}", _x, _z, _i));
-                    // HexCell cell = cells[i] = PrefabUtili x, .InstantiatePrefab(cellPrefab, chunk.transform) as HexCell;
                     HexCell cell = cells[_i] = asyncOperationHandle.Result.GetComponent<HexCell>();
                     cell.coordinates = coordinates;
                     newPosition.x -= HexMetrics.chunkSizeX * HexMetrics.xDiameter * chunkX;
@@ -173,8 +170,6 @@ public class HexGrid : MonoBehaviour
                     cell.Index = _i;
                     AddCellToChunk(_x, _z, cell);
 
-                    // TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
-
                     asyncOperationHandles[_i + cellCountX * cellCountZ] = Addressables.InstantiateAsync(cellLabelPrefabReference, cell.chunk.gridCanvas.transform);
 
                     asyncOperationHandles[_i + cellCountX * cellCountZ].Completed += (asyncOperationHandle) =>
@@ -182,24 +177,10 @@ public class HexGrid : MonoBehaviour
                         TextMeshProUGUI label = asyncOperationHandle.Result.GetComponent<TextMeshProUGUI>();
                         label.rectTransform.anchoredPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.z);
                         cell.uiRect = label.rectTransform;
-                        cell.UpdateLabel();
                     };
 
                     LoadingScreen.Instance.UpdateLoading(i / ((float)cellCount * 2));
                 };
-
-                // HexCoordinates coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-                // int chunkX = x / HexMetrics.chunkSizeX;
-                // int chunkZ = z / HexMetrics.chunkSizeZ;
-                // Vector3 newPosition = GetPosition(coordinates);
-                // HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab, GetChunk(chunkX, chunkZ).transform);
-                // cell.coordinates = coordinates;
-                // cell.transform.position = newPosition;
-                // cell.Index = i;
-                // AddCellToChunk(x, z, cell);
-
-                // TextMeshProUGUI label = Instantiate<TextMeshProUGUI>(cellLabelPrefab, cell.chunk.gridCanvas.transform);
-
                 i++;
             }
             if (z % (HexMetrics.chunkSizeZ / 2) == 0)
@@ -266,21 +247,6 @@ public class HexGrid : MonoBehaviour
                 yield return null;
             }
         }
-        // if (!Directory.Exists("Assets/Prefabs/Pregenerated Maps"))
-        //     AssetDatabase.CreateFolder("Assets/Prefabs", "Pregenerated Maps");
-        // string localPath = "Assets/Prefabs/Pregenerated Maps/" + map.name + ".prefab";
-
-        // // Make sure the file name is unique, in case an existing Prefab has the same name.
-        // localPath = AssetDatabase.GenerateUniqueAssetPath(localPath);
-
-        // // Create the new Prefab and log whether Prefab was saved successfully.
-        // bool prefabSuccess;
-        // PrefabUtility.SaveAsPrefabAsset(map, localPath, out prefabSuccess);
-        // if (prefabSuccess == true)
-        //     Debug.Log("Prefab was saved successfully");
-        // else
-        //     Debug.Log("Prefab failed to save" + prefabSuccess);
-
     }
 
     public HexCell GetCell(HexCoordinates coordinates)
@@ -349,7 +315,7 @@ public class HexGrid : MonoBehaviour
         units.Clear();
     }
 
-    public void FindPath(HexCell fromCell, HexCell toCell)
+    public void FindPath(HexCell fromCell, HexCell toCell, int speed)
     {
 
         // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
@@ -358,23 +324,38 @@ public class HexGrid : MonoBehaviour
         currentPathFrom = fromCell;
         currentPathTo = toCell;
         currentPathExists = Search(fromCell, toCell);
-        ShowPath();
+        ShowPath(speed);
         // sw.Stop();
         // Debug.Log(sw.ElapsedMilliseconds);
     }
 
-    void ShowPath()
+    public List<HexCell> GetPath()
+    {
+        if (!currentPathExists)
+        {
+            return null;
+        }
+        List<HexCell> path = ListPool<HexCell>.Get();
+        for (HexCell c = currentPathTo; c != currentPathFrom; c = c.PathFrom)
+        {
+            path.Add(c);
+        }
+        path.Add(currentPathFrom);
+        path.Reverse();
+        return path;
+    }
+
+    void ShowPath(int speed)
     {
         if (currentPathExists)
         {
-            HexCell current = currentPathTo;
-            while (current != currentPathFrom)
+            int turn = 0;
+            foreach (HexCell current in GetPath())
             {
-                // int turn = current.Distance / speed;
-                // current.SetLabel(turn.ToString());
+                int currentTurn = (turn - 1) / speed;
+                current.SetLabel(currentTurn.ToString());
                 current.EnableHighlight(Color.white);
-                current.UpdateLabel();
-                current = current.PathFrom;
+                turn++;
             }
         }
         currentPathFrom.EnableHighlight(Color.blue);
@@ -392,6 +373,7 @@ public class HexGrid : MonoBehaviour
                 current.DisableHighlight();
                 current = current.PathFrom;
             }
+            current.SetLabel(null);
             current.DisableHighlight();
             currentPathExists = false;
         }
@@ -404,7 +386,6 @@ public class HexGrid : MonoBehaviour
     }
 
     bool Search(HexCell fromCell, HexCell toCell)
-    // IEnumerator Search(HexCell fromCell, HexCell toCell)
     {
         searchFrontierPhase += 2;
         if (searchFrontier == null)
@@ -412,23 +393,14 @@ public class HexGrid : MonoBehaviour
         else
             searchFrontier.Clear();
 
-        // for (int i = 0; i < cells.Length; i++)
-        // {
-        //     // cells[i].Distance = int.MaxValue;
-        //     // cells[i].SearchHeuristic = 0;
-        //     cells[i].DisableHighlight();
-        // }
-
         fromCell.EnableHighlight(Color.blue);
         toCell.EnableHighlight(Color.red);
 
-        // WaitForSeconds delay = new WaitForSeconds(1 / 60f);
         fromCell.SearchPhase = searchFrontierPhase;
         fromCell.Distance = 0;
         searchFrontier.Enqueue(fromCell);
         while (searchFrontier.Count > 0)
         {
-            // yield return delay;
             HexCell current = searchFrontier.Dequeue();
             current.SearchPhase += 1;
             if (current == toCell)
@@ -440,7 +412,6 @@ public class HexGrid : MonoBehaviour
                 int distance;
                 if (!CanPassPathFind(current, d, out distance))
                     continue;
-
                 if (neighbor.SearchPhase < searchFrontierPhase)
                 {
                     neighbor.SearchPhase = searchFrontierPhase;
@@ -461,10 +432,10 @@ public class HexGrid : MonoBehaviour
         return false;
     }
 
-    bool CanPassPathFind(HexCell current, HexDirection d, out int distance)
+    bool CanPassPathFind(HexCell current, HexDirection d, out int moveCost)
     {
         HexCell neighbor = current.GetNeighbor(d);
-        distance = current.Distance;
+        moveCost = current.Distance;
         if (neighbor == null)
             return false;
         if (neighbor.SearchPhase > searchFrontierPhase)
@@ -476,17 +447,17 @@ public class HexGrid : MonoBehaviour
         if (HexFeatureManager.noWalkable.Contains(neighbor.featureManager.currentFeature))
             return false;
         if (neighbor.HasRiver())
-            distance += 10;
+            moveCost += 10;
 
         if (current.HasRoadThroughEdge(d))
-            distance += 1;
+            moveCost += 1;
         else
-            distance += 10;
+            moveCost += 10;
         int elevationDiff = Mathf.Abs(neighbor.Elevation - current.Elevation);
         if (elevationDiff > 1)
             return false;
         if (elevationDiff == 1)
-            distance += 5;
+            moveCost += 5;
         return true;
     }
 
