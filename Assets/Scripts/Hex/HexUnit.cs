@@ -38,6 +38,7 @@ public class HexUnit : MonoBehaviour
     List<HexCell> pathToTravel;
     public int travelSpeed = 2;
     public float rotationSpeed = 360f;
+    public Animator animator;
 
     public bool IsValidDestination(HexCell cell)
     {
@@ -57,6 +58,7 @@ public class HexUnit : MonoBehaviour
         Vector3 a, b, c = pathToTravel[0].transform.position;
         transform.position = c;
         yield return LookAt(pathToTravel[1].transform.position);
+        animator.CrossFade("Run", 0.2f);
         float t = Time.deltaTime * travelSpeed;
         for (int i = 1; i < pathToTravel.Count; i++)
         {
@@ -89,6 +91,7 @@ public class HexUnit : MonoBehaviour
         orientation = transform.localRotation.eulerAngles.y;
         ListPool<HexCell>.Release(pathToTravel);
         pathToTravel = null;
+        animator.CrossFade("Idle", 0.2f);
     }
 
     IEnumerator LookAt(Vector3 point)

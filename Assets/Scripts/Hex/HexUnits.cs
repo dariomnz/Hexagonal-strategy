@@ -10,6 +10,10 @@ public class HexUnits : ScriptableObject
     {
         None,
         Base,
+        Knight,
+        Barbarian,
+        Mage,
+        Rogue,
     }
 
     [SerializeField]

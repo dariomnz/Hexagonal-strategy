@@ -87,7 +87,7 @@ public class HexMapEditor : MonoBehaviour
         HexCell cell = GetCellUnderCursor();
         if (cell && !cell.Unit)
         {
-            hexGrid.AddUnit(Instantiate(HexMetrics.Instance.hexUnits.unitsPrefabs[HexUnits.UnitType.Base]), cell, Random.Range(0f, 360f));
+            hexGrid.AddUnit(Instantiate(HexMetrics.Instance.hexUnits.unitsPrefabs[HexUnits.UnitType.Knight]), cell, Random.Range(0f, 360f));
         }
     }
 
