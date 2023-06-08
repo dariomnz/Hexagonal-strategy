@@ -48,6 +48,10 @@ public class HexCell : MonoBehaviour
             if (hasIncomingRiver &&
                 elevation > GetNeighbor(incomingRiver).elevation)
                 RemoveIncomingRiver();
+            if (Unit)
+                Unit.Location = this;
+            if (featureManager.currentFeature != HexFeatureManager.Features.None)
+                featureManager.Location = this;
 
             Refresh();
         }

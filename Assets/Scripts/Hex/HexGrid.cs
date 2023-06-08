@@ -393,8 +393,8 @@ public class HexGrid : MonoBehaviour
         else
             searchFrontier.Clear();
 
-        fromCell.EnableHighlight(Color.blue);
-        toCell.EnableHighlight(Color.red);
+        // fromCell.EnableHighlight(Color.blue);
+        // toCell.EnableHighlight(Color.red);
 
         fromCell.SearchPhase = searchFrontierPhase;
         fromCell.Distance = 0;
@@ -459,6 +459,50 @@ public class HexGrid : MonoBehaviour
         if (elevationDiff == 1)
             moveCost += 5;
         return true;
+    }
+
+    public List<HexCell> CellsInCircle(HexCell center, int radius)
+    {
+        if (searchFrontier == null)
+            searchFrontier = new HexCellPriorityQueue();
+        else
+            searchFrontier.Clear();
+
+        List<HexCell> outCells = ListPool<HexCell>.Get();
+        if (center == null)
+            return null;
+
+        searchFrontierPhase += 2;
+        center.SearchPhase = searchFrontierPhase;
+        center.Distance = 0;
+        center.SearchHeuristic = 0;
+        searchFrontier.Enqueue(center);
+        HexCoordinates centerCoor = center.coordinates;
+        int size = 0;
+        int totalCells = 1;
+        for (int i = 0; i < radius + 1; i++)
+        {
+            totalCells += 6 * i;
+        }
+        while (size < totalCells && searchFrontier.Count > 0)
+        {
+            HexCell current = searchFrontier.Dequeue();
+            outCells.Add(current);
+            size += 1;
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                HexCell neighbor = current.GetNeighbor(d);
+                if (neighbor && neighbor.SearchPhase < searchFrontierPhase)
+                {
+                    neighbor.SearchPhase = searchFrontierPhase;
+                    neighbor.Distance = neighbor.coordinates.DistanceTo(centerCoor);
+                    neighbor.SearchHeuristic = 0;
+                    searchFrontier.Enqueue(neighbor);
+                }
+            }
+        }
+        searchFrontier.Clear();
+        return outCells;
     }
 
     public void ShowUI(bool visible)

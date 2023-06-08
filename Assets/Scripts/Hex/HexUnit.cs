@@ -17,7 +17,7 @@ public class HexUnit : MonoBehaviour
                 location.Unit = null;
             location = value;
             location.Unit = this;
-            transform.SetParent(location.transform);
+            transform.SetParent(location.chunk.transform);
             transform.position = value.transform.position;
         }
     }

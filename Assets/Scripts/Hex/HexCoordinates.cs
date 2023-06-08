@@ -47,60 +47,47 @@ public struct HexCoordinates
         }
         return new HexCoordinates(iX, iY);
     }
+    private int WrapDelta(int delta, int size)
+    {
+        int halfSize = size / 2;
+        if (delta > halfSize)
+            return Mathf.Abs(size - delta);
+        else
+            return delta;
+    }
 
     public int DistanceTo(HexCoordinates other)
     {
-        HexCoordinates auxCoor = new HexCoordinates(other.X, other.Z);
+        int deltaX = Mathf.Abs(other.X - X);
+        int deltaY = Mathf.Abs(other.Y - Y);
+        int deltaZ = Mathf.Abs(other.Z - Z);
 
-        int xyz = Mathf.Abs(auxCoor.X - X) +
-                  Mathf.Abs(auxCoor.Y - Y) +
-                  Mathf.Abs(auxCoor.Z - Z);
+        int wrappedDeltaX = WrapDelta(deltaX, HexMetrics.cellSizeX);
+        int wrappedDeltaY = WrapDelta(deltaY, HexMetrics.cellSizeZ);
+        int wrappedDeltaZ = WrapDelta(deltaZ, HexMetrics.cellSizeZ);
+        int distance = wrappedDeltaX + wrappedDeltaY + wrappedDeltaZ;
 
-        auxCoor.X += HexMetrics.cellSizeX;
+        HexCoordinates auxCoor = new HexCoordinates(other.X - HexMetrics.cellSizeX / 2, other.Z);
+        int deltaX2 = Mathf.Abs(auxCoor.X - X);
+        int deltaY2 = Mathf.Abs(auxCoor.Y - Y);
+        int deltaZ2 = Mathf.Abs(auxCoor.Z - Z);
 
-        int xyzWrapped = Mathf.Abs(auxCoor.X - X) +
-                         Mathf.Abs(auxCoor.Y - Y) +
-                         Mathf.Abs(auxCoor.Z - Z);
-        if (xyzWrapped < xyz)
-        {
-            xyz = xyzWrapped;
-        }
-        else
-        {
-            auxCoor.X -= 2 * HexMetrics.cellSizeX;
-            xyzWrapped = Mathf.Abs(auxCoor.X - X) +
-                         Mathf.Abs(auxCoor.Y - Y) +
-                         Mathf.Abs(auxCoor.Z - Z);
-            if (xyzWrapped < xyz)
-            {
-                xyz = xyzWrapped;
-            }
-        }
+        int wrappedDeltaX2 = WrapDelta(deltaX2, HexMetrics.cellSizeX);
+        int wrappedDeltaY2 = WrapDelta(deltaY2, HexMetrics.cellSizeZ);
+        int wrappedDeltaZ2 = WrapDelta(deltaZ2, HexMetrics.cellSizeZ);
+        int distance2 = wrappedDeltaX2 + wrappedDeltaY2 + wrappedDeltaZ2;
 
-        auxCoor = new HexCoordinates(other.X, other.Z);
-        auxCoor.X -= HexMetrics.cellSizeX / 2;
-        auxCoor.Z += HexMetrics.cellSizeZ;
+        auxCoor = new HexCoordinates(other.X + HexMetrics.cellSizeX / 2, other.Z);
+        int deltaX3 = Mathf.Abs(auxCoor.X - X);
+        int deltaY3 = Mathf.Abs(auxCoor.Y - Y);
+        int deltaZ3 = Mathf.Abs(auxCoor.Z - Z);
 
-        xyzWrapped = Mathf.Abs(auxCoor.X - X) +
-                         Mathf.Abs(auxCoor.Y - Y) +
-                         Mathf.Abs(auxCoor.Z - Z);
-        if (xyzWrapped < xyz)
-        {
-            xyz = xyzWrapped;
-        }
-        else
-        {
-            auxCoor.X += 2 * HexMetrics.cellSizeX / 2;
-            auxCoor.Z -= 2 * HexMetrics.cellSizeZ;
-            xyzWrapped = Mathf.Abs(auxCoor.X - X) +
-                         Mathf.Abs(auxCoor.Y - Y) +
-                         Mathf.Abs(auxCoor.Z - Z);
-            if (xyzWrapped < xyz)
-            {
-                xyz = xyzWrapped;
-            }
-        }
-        return xyz / 2;
+        int wrappedDeltaX3 = WrapDelta(deltaX3, HexMetrics.cellSizeX);
+        int wrappedDeltaY3 = WrapDelta(deltaY3, HexMetrics.cellSizeZ);
+        int wrappedDeltaZ3 = WrapDelta(deltaZ3, HexMetrics.cellSizeZ);
+        int distance3 = wrappedDeltaX3 + wrappedDeltaY3 + wrappedDeltaZ3;
+
+        return Mathf.Min(distance, distance2, distance3) / 2;
     }
 
     public override string ToString()

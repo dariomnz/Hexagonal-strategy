@@ -118,7 +118,7 @@ MonoBehaviour:
     - {fileID: 5660914543188298848, guid: e5fb4ba621d9ff94b861c366866122bf, type: 3}
     - {fileID: 5660914543188298848, guid: 4a94adf70244e4d4fa06f6b566da469d, type: 3}
   currentFeature: 0
-  hexCell: {fileID: -133454396152487064}
+  location: {fileID: -133454396152487064}
 --- !u!64 &4743204687484512426
 MeshCollider:
   m_ObjectHideFlags: 0

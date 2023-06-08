@@ -54,7 +54,7 @@ public class HexGameUI : MonoBehaviour
     public void SetEditMode(bool toggle)
     {
         enabled = !toggle;
-        hexGrid.ShowUI(!toggle);
+        // hexGrid.ShowUI(!toggle);
         hexGrid.ClearPath();
     }
 
