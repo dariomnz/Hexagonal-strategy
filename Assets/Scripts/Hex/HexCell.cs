@@ -57,27 +57,7 @@ public class HexCell : MonoBehaviour
         }
     }
 
-    int distance = int.MaxValue;
-    public int Distance
-    {
-        get { return distance; }
-        set
-        {
-            distance = value;
-            // UpdateLabel();
-        }
-    }
-
-    int searchHeuristic = 0;
-    public int SearchHeuristic
-    {
-        get { return searchHeuristic; }
-        set
-        {
-            searchHeuristic = value;
-            // UpdateLabel();
-        }
-    }
+    public int Distance { get; set; } = int.MaxValue;
     public HexCoordinates coordinates;
     public HexFeatureManager featureManager;
     public HexCell[] neighbors;
@@ -96,6 +76,7 @@ public class HexCell : MonoBehaviour
     public HexCell PathFrom { get; set; }
     public HexCell NextWithSamePriority { get; set; }
     public int SearchPhase { get; set; }
+    public int SearchHeuristic { get; set; } = 0;
     public int waterLevel { get; set; }
     public int waterDeep { get; set; }
     public bool isLake { get; set; } = false;
@@ -111,7 +92,8 @@ public class HexCell : MonoBehaviour
 
     void OnDestroy()
     {
-        Addressables.ReleaseInstance(uiRect.gameObject);
+        if (uiRect)
+            Addressables.ReleaseInstance(uiRect.gameObject);
         Addressables.ReleaseInstance(gameObject);
     }
 
@@ -185,7 +167,7 @@ public class HexCell : MonoBehaviour
     }
 
     public bool HasRiver() { return hasIncomingRiver || hasOutgoingRiver; }
-    public bool HasRiverBeginOrEnd { get { return hasIncomingRiver != hasOutgoingRiver; } }
+    public bool HasRiverBeginOrEnd() { return hasIncomingRiver != hasOutgoingRiver; }
     public bool HasRiverThroughEdge(HexDirection direction)
     {
         return
@@ -311,13 +293,13 @@ public class HexCell : MonoBehaviour
         // label.text += "\nDist: " + (distance == int.MaxValue ? "" : distance.ToString());
 
 
-        text = distance == int.MaxValue ? "" : distance.ToString();
+        text = Distance == int.MaxValue ? "" : Distance.ToString();
         text += "\n" + (SearchHeuristic == 0 ? "" : SearchHeuristic.ToString());
 
         SetLabel(text);
     }
 
-    public int SearchPriority { get { return distance + SearchHeuristic; } }
+    public int SearchPriority { get { return Distance + SearchHeuristic; } }
 
     public void DisableHighlight()
     {

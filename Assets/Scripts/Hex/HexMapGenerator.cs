@@ -110,8 +110,7 @@ public class HexMapGenerator : MonoBehaviour
             grid.GetCell(i).waterLevel = waterLevel;
         }
 
-        LoadingScreen.Instance.Open();
-        yield return StartCoroutine(CreateLand());
+        CreateLand();
         ErodeLand();
         CreateClimate();
         CreateRivers();
@@ -121,8 +120,7 @@ public class HexMapGenerator : MonoBehaviour
             grid.GetCell(i).SearchPhase = 0;
         }
         Random.state = originalRandomState;
-
-        LoadingScreen.Instance.Close();
+        yield return null;
     }
 
     void CreateRivers()
@@ -335,7 +333,7 @@ public class HexMapGenerator : MonoBehaviour
         climate[cellIndex] = new ClimateData();
     }
 
-    IEnumerator CreateLand()
+    void CreateLand()
     {
         int totalLandBudget = Mathf.RoundToInt(grid.cellCount * landPercentage * 0.01f);
         landCells = totalLandBudget;
@@ -347,11 +345,6 @@ public class HexMapGenerator : MonoBehaviour
                 landBudget = SinkTerrain(chunkSize, landBudget);
             else
                 landBudget = RaiseTerrain(chunkSize, landBudget);
-            if ((landBudget / 20) != 0 && (landBudget % (landBudget / 20)) == 0)
-            {
-                LoadingScreen.Instance.UpdateLoading((totalLandBudget - landBudget) / (float)totalLandBudget);
-                yield return null;
-            }
         }
         landCells -= landBudget;
     }

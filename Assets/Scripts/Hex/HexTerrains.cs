@@ -83,22 +83,10 @@ public class HexTerrains : ScriptableObject
         {"010020", HexRoadsConf.Eight},
     };
 
-
-    // [System.Serializable]
-    // public class TerrainRoads : SerializableDictionaryBase<HexRoadsConf, GameObject> { }
-
-    // [SerializeField]
-    // public SerializableDictionaryBase<HexType, TerrainRoads> terrainMeshs;
-
     public SerializableDictionaryBase<HexMaterial, Material> terrainMaterials;
     public SerializableDictionaryBase<HexRoadsConf, Mesh> terrainRoadsMeshs;
     public SerializableDictionaryBase<HexRoadsConf, Mesh> terrainRiversMeshs;
     public Mesh waterTop;
-
-    // public GameObject GetSimpleMesh(HexType type)
-    // {
-    //     return terrainMeshs[type][HexRoadsConf.Zero];
-    // }
 
     public Material[] GetMaterials(HexType type, bool hasRoads = false, bool hasRivers = false)
     {
@@ -188,52 +176,4 @@ public class HexTerrains : ScriptableObject
         }
         return terrainRoadsMeshs[conf];
     }
-
-
-    // public GameObject GetMesh(HexType type, bool[] roads, out int rotations)
-    // {
-    //     rotations = -1;
-    //     if (!terrainMeshs.ContainsKey(type))
-    //     {
-    //         Debug.LogError(string.Format("Not registed type: {0}", type.ToString()));
-    //         return null;
-    //     }
-    //     TerrainRoads terrainRoads = terrainMeshs[type];
-
-    //     string roadsString = "";
-    //     foreach (bool road in roads)
-    //     {
-    //         if (road)
-    //             roadsString += "1";
-    //         else
-    //             roadsString += "0";
-    //     }
-
-    //     for (int i = 0; i < 6; i++)
-    //     {
-    //         if (RoadConfiguration.ContainsKey(roadsString))
-    //         {
-    //             rotations = i;
-    //             break;
-    //         }
-    //         char ultimoCaracter = roadsString[roadsString.Length - 1];  // Guarda el último carácter
-    //         roadsString = ultimoCaracter + roadsString.Substring(0, roadsString.Length - 1);
-    //     }
-
-    //     if (rotations == -1)
-    //     {
-    //         Debug.LogError(string.Format("Not registed roadConfiguration: {0}", roadsString.ToString()));
-    //         return null;
-    //     }
-
-    //     HexRoadsConf conf = RoadConfiguration[roadsString];
-
-    //     if (!terrainRoads.ContainsKey(conf))
-    //     {
-    //         Debug.LogError(string.Format("Not registed terrainRoadPrefab: {0}", conf.ToString()));
-    //         return null;
-    //     }
-
-    //     return terrainRoads[conf];
-    // }
 }

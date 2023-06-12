@@ -21,7 +21,7 @@ public class HexGameUI : MonoBehaviour
             else if (Input.GetMouseButtonDown(1))
             {
                 selectedUnit = null;
-                hexGrid.ClearPath();
+                HexSearch.ClearPath();
             }
             else if (selectedUnit)
             {
@@ -34,17 +34,17 @@ public class HexGameUI : MonoBehaviour
     {
         if (UpdateCurrentCell())
             if (currentCell && selectedUnit.IsValidDestination(currentCell))
-                hexGrid.FindPath(selectedUnit.Location, currentCell, selectedUnit.travelSpeed);
+                HexSearch.FindPath(selectedUnit.Location, currentCell, selectedUnit.travelSpeed);
             else
-                hexGrid.ClearPath();
+                HexSearch.ClearPath();
     }
 
     void DoMove()
     {
-        if (hexGrid.HasPath)
+        if (HexSearch.HasPath)
         {
-            selectedUnit.Travel(hexGrid.GetPath());
-            hexGrid.ClearPath();
+            selectedUnit.Travel(HexSearch.GetPath());
+            HexSearch.ClearPath();
             selectedUnit = null;
         }
         else
@@ -55,7 +55,7 @@ public class HexGameUI : MonoBehaviour
     {
         enabled = !toggle;
         // hexGrid.ShowUI(!toggle);
-        hexGrid.ClearPath();
+        HexSearch.ClearPath();
     }
 
     bool UpdateCurrentCell()

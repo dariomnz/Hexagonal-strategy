@@ -128,7 +128,7 @@ public class HexMapEditor : MonoBehaviour
 
     void EditCells(HexCell center)
     {
-        foreach (HexCell hexCell in hexGrid.CellsInCircle(center, brushSize))
+        foreach (HexCell hexCell in HexSearch.CellsInCircle(center, brushSize))
         {
             EditCell(hexCell);
         }
@@ -172,7 +172,7 @@ public class HexMapEditor : MonoBehaviour
     {
         ClearHighlight();
         if (currentCell)
-            foreach (HexCell hexCell in hexGrid.CellsInCircle(currentCell, brushSize))
+            foreach (HexCell hexCell in HexSearch.CellsInCircle(currentCell, brushSize))
             {
                 hexCell?.EnableHighlight(Color.white);
             }
@@ -181,7 +181,7 @@ public class HexMapEditor : MonoBehaviour
     void ClearHighlight()
     {
         if (previousCell)
-            foreach (HexCell hexCell in hexGrid.CellsInCircle(previousCell, brushSize))
+            foreach (HexCell hexCell in HexSearch.CellsInCircle(previousCell, brushSize))
             {
                 hexCell?.DisableHighlight();
             }
