@@ -1,11 +1,38 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 public class HexGameUI : MonoBehaviour
 {
+    public static HexGameUI Instance { get; private set; }
+
+    private void Awake()
+    {
+        // If there is an instance, and it's not me, delete myself.
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+
     public HexGrid hexGrid;
     HexCell currentCell;
-    HexUnit selectedUnit;
+    public HexUnit selectedUnit { get; set; }
+
+    Canvas interactionCanvas;
+    public HexRadialInteractiveUI hexRadialInteractiveUI;
+
+    void Start()
+    {
+        interactionCanvas = GetComponent<Canvas>();
+    }
 
     void Update()
     {
@@ -22,12 +49,15 @@ public class HexGameUI : MonoBehaviour
             {
                 selectedUnit = null;
                 HexSearch.ClearPath();
+                CloseInteraction();
             }
             else if (selectedUnit)
             {
                 DoPathfinding();
             }
         }
+
+        transform.rotation = Camera.main.transform.rotation;
     }
 
     void DoPathfinding()
@@ -74,8 +104,40 @@ public class HexGameUI : MonoBehaviour
 
     void DoSelection()
     {
-        UpdateCurrentCell();
-        if (currentCell)
-            selectedUnit = currentCell.Unit;
+        GetInteractor()?.Interact();
+        // UpdateCurrentCell();
+        // if (currentCell)
+        //     selectedUnit = currentCell.Unit;
     }
+
+    IInteractive GetInteractor()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            return hit.collider.GetComponent<IInteractive>();
+        }
+        return null;
+    }
+
+    public void OpenInteraction(Vector3 position, IInteractive interactor)
+    {
+        OpenInteraction(position);
+        hexRadialInteractiveUI.CreateMenu(interactor.GetInteractions());
+    }
+
+    public void OpenInteraction(Vector3 position)
+    {
+        transform.position = position;
+        interactionCanvas.enabled = true;
+        CameraController.Locked = true;
+    }
+
+    public void CloseInteraction()
+    {
+        interactionCanvas.enabled = false;
+        CameraController.Locked = false;
+    }
+
 }

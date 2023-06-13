@@ -270,9 +270,14 @@ public class HexGrid : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
         {
-            return hit.collider.GetComponentInParent<HexUnit>();
+            return hit.collider.GetComponent<HexUnit>();
         }
         return null;
+    }
+
+    public void CreateUnit(HexCell cell, HexUnits.UnitType type)
+    {
+        AddUnit(Instantiate(HexMetrics.Instance.hexUnits.unitsPrefabs[type]), cell, Random.Range(0f, 360f));
     }
 
     public void AddUnit(HexUnit unit, HexCell location, float orientation)

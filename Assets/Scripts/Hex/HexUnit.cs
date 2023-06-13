@@ -1,10 +1,12 @@
 using UnityEngine;
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Pool;
+using UnityEngine.Events;
 
-public class HexUnit : MonoBehaviour
+public class HexUnit : MonoBehaviour, IInteractive
 {
 
     HexCell location;
@@ -135,5 +137,21 @@ public class HexUnit : MonoBehaviour
         HexUnits.UnitType _unitType = (HexUnits.UnitType)reader.ReadByte();
         HexUnit hexUnit = Instantiate(HexMetrics.Instance.hexUnits.unitsPrefabs[_unitType]);
         grid.AddUnit(hexUnit, grid.GetCell(coordinates), orientation);
+    }
+
+    public Dictionary<HexInteration, UnityAction> GetInteractions()
+    {
+        return new Dictionary<HexInteration, UnityAction>() {
+            { HexInteration.UnitMove , () => { Debug.Log(ToString()+HexInteration.UnitMove.ToString());
+                                            HexGameUI.Instance.selectedUnit = this;
+                                            HexGameUI.Instance.CloseInteraction(); }},
+            { HexInteration.UnitAttack , () => { Debug.Log(ToString()+HexInteration.UnitAttack.ToString());
+                                            HexGameUI.Instance.CloseInteraction(); }},
+        };
+    }
+
+    public void Interact()
+    {
+        HexGameUI.Instance.OpenInteraction(transform.position + Vector3.up * 3, this);
     }
 }

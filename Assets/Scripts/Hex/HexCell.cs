@@ -6,8 +6,9 @@ using UnityEngine.UI;
 using System.IO;
 using TMPro;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Events;
 
-public class HexCell : MonoBehaviour
+public class HexCell : MonoBehaviour, IInteractive
 {
     [SerializeField]
     HexTerrains.HexType terrainType;
@@ -387,5 +388,33 @@ public class HexCell : MonoBehaviour
     public override string ToString()
     {
         return coordinates.ToString();
+    }
+
+    public Dictionary<HexInteration, UnityAction> GetInteractions()
+    {
+        Dictionary<HexInteration, UnityAction> outDict = new Dictionary<HexInteration, UnityAction>();
+
+        if (!Unit)
+            outDict[HexInteration.CellCreateUnit] = () =>
+            {
+                HexGameUI.Instance.OpenInteraction(transform.position + Vector3.up * 3);
+                HexGameUI.Instance.hexRadialInteractiveUI.CreateMenu(new Dictionary<HexInteration, UnityAction>() {
+                    {HexInteration.CellCreateUnitKnight,()=>{chunk.hexGrid.CreateUnit(this,HexUnits.UnitType.Knight);
+                    HexGameUI.Instance.CloseInteraction(); }},
+                    {HexInteration.CellCreateUnitBarbarian,()=>{chunk.hexGrid.CreateUnit(this,HexUnits.UnitType.Barbarian);
+                    HexGameUI.Instance.CloseInteraction(); }},
+                    {HexInteration.CellCreateUnitMage,()=>{chunk.hexGrid.CreateUnit(this,HexUnits.UnitType.Mage);
+                    HexGameUI.Instance.CloseInteraction(); }},
+                    {HexInteration.CellCreateUnitRogue,()=>{chunk.hexGrid.CreateUnit(this,HexUnits.UnitType.Rogue);
+                    HexGameUI.Instance.CloseInteraction(); }},
+                });
+            };
+
+        return outDict;
+    }
+
+    public void Interact()
+    {
+        HexGameUI.Instance.OpenInteraction(transform.position + Vector3.up * 3, this);
     }
 }

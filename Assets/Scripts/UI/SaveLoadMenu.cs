@@ -32,12 +32,10 @@ public class SaveLoadMenu : MonoBehaviour
         GetComponent<Canvas>().enabled = true;
         CameraController.Locked = true;
         verticalScrollBar.value = 0.999f;
-        // gameObject.SetActive(true);
     }
 
     public void Close()
     {
-        // gameObject.SetActive(false);
         GetComponent<Canvas>().enabled = false;
         CameraController.Locked = false;
     }
